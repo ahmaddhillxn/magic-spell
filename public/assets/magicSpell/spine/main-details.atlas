@@ -1,0 +1,162 @@
+Wizard new 35.png
+size:984,970
+filter:Linear,Linear
+scale:0.47
+ashes 2
+bounds:779,630,122,37
+beard
+bounds:132,42,129,275
+body
+bounds:251,472,494,364
+rotate:90
+coin angle 1
+bounds:912,645,62,61
+coin angle 2
+bounds:712,421,62,47
+coin angle 3
+bounds:833,218,62,38
+coin angle 4
+bounds:619,727,62,29
+rotate:90
+coin angle 5
+bounds:693,328,62,14
+rotate:90
+coin idle
+bounds:619,661,62,29
+rotate:90
+coin on the stone
+bounds:899,215,62,29
+cycle 1
+bounds:905,566,75,75
+cycle2
+bounds:886,43,31,31
+cycle3
+bounds:680,271,12,12
+ears
+bounds:779,671,125,35
+eye L
+bounds:843,424,13,14
+eye R
+bounds:860,424,13,14
+eyebrow L
+bounds:693,433,35,15
+rotate:90
+eyebrow R
+bounds:693,394,35,15
+rotate:90
+face
+bounds:833,78,102,114
+rotate:90
+face lose
+bounds:471,5,97,58
+finer lower 1
+bounds:94,5,26,41
+rotate:90
+finger 1
+bounds:680,287,37,22
+rotate:90
+finger 1 R
+bounds:572,7,39,68
+finger 2
+bounds:833,184,53,30
+finger 2 right
+bounds:951,168,29,43
+finger 3
+bounds:912,750,63,39
+finger 3 right
+bounds:951,122,29,42
+finger 4
+bounds:900,248,62,46
+finger 4 right
+bounds:951,76,29,42
+flame
+bounds:4,4,86,27
+glow
+bounds:265,53,265,133
+rotate:90
+hair back
+bounds:251,322,196,146
+hand R
+bounds:900,355,80,47
+hat
+bounds:779,442,120,184
+hat back
+bounds:4,35,282,61
+rotate:90
+hat front
+bounds:69,35,282,59
+rotate:90
+hat sparkle
+bounds:877,425,13,20
+rotate:90
+idle magic 1
+bounds:788,21,46,94
+rotate:90
+idle magic 2
+bounds:712,710,79,196
+rotate:90
+idle magic 4
+bounds:652,339,37,129
+lose 1 ashes
+bounds:328,6,139,43
+lower arm L
+bounds:680,95,149,161
+lower arm R
+bounds:451,332,136,197
+rotate:90
+moustache
+bounds:139,4,75,34
+moustache lose
+bounds:218,6,77,32
+moustache win
+bounds:652,706,83,24
+rotate:90
+mouth idle
+bounds:402,53,31,10
+mouth lose
+bounds:788,71,35,20
+mouth win
+bounds:299,4,45,25
+rotate:90
+nose
+bounds:778,421,17,37
+rotate:90
+ray 1
+bounds:583,93,93,235
+ray 2
+bounds:500,79,79,249
+rays
+bounds:615,6,93,83
+shoudlers
+bounds:402,67,251,94
+rotate:90
+smoke
+bounds:903,406,77,156
+offsets:0,0,77,163
+spark 1
+bounds:966,254,40,12
+rotate:90
+spark 2
+bounds:912,710,63,36
+spark 3
+bounds:900,298,53,79
+rotate:90
+spark 4
+bounds:680,713,28,76
+sparkle 1
+bounds:819,424,14,20
+rotate:90
+stone demaged
+bounds:619,793,355,71
+stone demaged 2
+bounds:619,868,358,98
+stone main
+bounds:4,321,645,243
+rotate:90
+upper arm L
+bounds:712,260,157,184
+rotate:90
+upper arm R
+bounds:619,472,156,185
+wand
+bounds:712,8,72,83

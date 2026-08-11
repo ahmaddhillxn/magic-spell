@@ -1,0 +1,17 @@
+{
+  "gameGuideText": {
+    "paragraph1": {
+      "text1": "Welcome to Magic Spell! Cast a magic spell to get a random multiplier. If the multiplier is equal to or higher than your payout, you win! But if the magic fails, you lose and the round ends.",
+      "text2": "Watch the wizard do magic and see your multiplier. On the top side, you can see the results of past rounds to help you choose your next bet."
+    },
+    "paragraph2": {
+      "text2": "Set your payout to choose how much you want to win.",
+      "text3": "Choose your bet and payout, then click the bet button to start the magic spell.",
+      "text4": "If the magic fails, you lose your bet. If it works, coins will appear in the magic circle and you win!"
+    },
+    "paragraph4": {
+      "title": "Last Results",
+      "text1": "The Last Results section shows multipliers from previous rounds. You can use these past numbers to help you make better betting choices."
+    }
+  }
+}
