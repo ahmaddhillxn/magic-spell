@@ -1,0 +1,75 @@
+<div
+  class="sc-iMWBiG gnAXrm"
+  [class.show]="visibility.visible()"
+  [class.hide]="!visibility.visible()"
+>
+  <div
+    class="sc-bBeLUw iqJovQ"
+    [class.active]="visibility.active()"
+    (click)="toggle.closeAutoModal()"
+  ></div>
+  <div class="sc-fvtFIh eoJlOr">
+    <div
+      class="animation-wrapper fade-to-bottom"
+      [class.active]="visibility.active()"
+    >
+      <div class="sc-ihgnxC epGzcq">
+        <div class="sc-jMakVn kZlOrS">
+          <div class="sc-hwdzOS kTAJFM">
+            <div class="sc-jaXxmD gZocBK"><div class="sc-ibQAlc ckeJQj">Autoplay</div></div>
+            <button
+              type="button"
+              class="sc-jGKxIN jZLjha"
+              (click)="toggle.closeAutoModal()"
+              aria-label="Close autoplay"
+            >
+              <span class="sc-iHbSHG huhUrz"
+                ><span class="sc-klVQfr bdatcO"></span><span class="sc-klVQfr bdatcO"></span
+              ></span>
+            </button>
+          </div>
+          <div class="sc-iMTnTM bFJnrU">
+            <div class="sc-krNlrx gNBJel">
+              <div class="sc-kbousD kRryJx">
+                <div class="vp-autoplay">
+                  <div class="vp-autoplay__rounds">
+                    <div class="vp-autoplay__rounds-title">Number of rounds</div>
+                    <div class="vp-autoplay__rounds-list">
+                      @for (rounds of roundOptions; track rounds) {
+                        <div
+                          class="vp-autoplay__round-item"
+                          [class.active]="selectedRounds === rounds"
+                          (click)="selectRounds(rounds)"
+                        >
+                          <label class="vp-autoplay__round-label">
+                            <input
+                              class="vp-autoplay__round-input"
+                              type="radio"
+                              name="rounds"
+                              [value]="rounds"
+                              [checked]="selectedRounds === rounds"
+                              (change)="selectRounds(rounds)"
+                            />
+                            <span class="vp-autoplay__fake-radio"></span>
+                            <span class="vp-autoplay__round-text">{{ rounds }}</span>
+                          </label>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="sc-sLsrW kTVTld pressableButton"
+                  (click)="startAuto()"
+                >
+                  Start Auto
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

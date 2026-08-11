@@ -1,0 +1,182 @@
+@if (visibility.visible()) {
+  <div
+    class="bet-amount-overlay"
+    [class.active]="visibility.active()"
+    (click)="betSlipToggle.close()"
+  ></div>
+}
+
+<div class="sc-kWtpeM jXYahu" [class.show]="visibility.visible()">
+  <div
+    class="animation-wrapper fade-to-bottom"
+    [class.active]="visibility.active()"
+  >
+    <div class="sc-ecPEgp etjbVm">
+      <div class="popupMain">
+        <div class="popupContainer">
+          <div class="popupWrapper">
+            <div class="popupInner">
+              <div class="betAmountContent">
+                <div class="nonAdvance" [class.hide]="toggleAdvance">
+                  <div class="betAmountWrapper">
+                    <div class="betAmountTitle">Bet Amount</div>
+                    <div class="amountNumber">
+                      <span>{{ currencySymbol }}</span
+                      ><span>{{ selectedAmount.toFixed(2) }}</span>
+                    </div>
+                  </div>
+                  <div class="stepsWrapper">
+                    @for (amount of stepAmounts; track amount) {
+                      <button
+                        type="button"
+                        class="stepButton"
+                        [class.active]="selectedAmount.toFixed(2) === amount.toFixed(2)"
+                        (click)="setAmount(amount)"
+                      >
+                        <span class="textfit-container"
+                          ><span
+                            class="textfit-text"
+                            style="font-size: calc(var(--vp-rem, 1rem) * 0.875)"
+                            >{{ amount.toFixed(2) }}</span
+                          ></span
+                        >
+                      </button>
+                    }
+                    <button
+                      type="button"
+                      class="advanceButton stepButton"
+                      disabled
+                      aria-disabled="true"
+                    >
+                      <span class="textfit-container"
+                        ><span
+                          class="textfit-text"
+                          style="font-size: calc(var(--vp-rem, 1rem) * 0.875)"
+                          >Advanced</span
+                        ></span
+                      >
+                    </button>
+                  </div>
+                  <div class="inputWrapper">
+                    <button
+                      type="button"
+                      class="minBetButton"
+                      [disabled]="selectedAmount <= minBet"
+                      (click)="setToMin()"
+                    >
+                      <span class="textfit-container"
+                        ><span
+                          class="textfit-text"
+                          style="font-size: calc(var(--vp-rem, 1rem) * 0.75)"
+                          >Min</span
+                        ></span
+                      >
+                    </button>
+                    <div class="amountWrapper">
+                      <div class="minMaxTextWrapper">
+                        <div class="minText">
+                          <span class="textfit-container"
+                            ><span
+                              class="textfit-text"
+                              style="font-size: calc(var(--vp-rem, 1rem) * 0.75)"
+                              >{{ minBet.toFixed(2) }}</span
+                            ></span
+                          >
+                        </div>
+                        <div class="maxText">
+                          <span class="textfit-container"
+                            ><span
+                              class="textfit-text"
+                              style="font-size: calc(var(--vp-rem, 1rem) * 0.75)"
+                              >{{ maxBet.toFixed(2) }}</span
+                            ></span
+                          >
+                        </div>
+                      </div>
+                      <span
+                        dir="ltr"
+                        data-orientation="horizontal"
+                        aria-disabled="false"
+                        class="SliderRoot"
+                        style="--radix-slider-thumb-transform: translateX(-50%)"
+                        (mousedown)="onSliderPointerDown($event)"
+                        (touchstart)="onSliderPointerDown($event)"
+                      >
+                        <span data-orientation="horizontal" class="tracker">
+                          <span
+                            data-orientation="horizontal"
+                            class="slider-range"
+                            [style.left.%]="0"
+                            [style.right.%]="100 - sliderPercent"
+                          ></span>
+                        </span>
+                        <span
+                          style="
+                            transform: var(--radix-slider-thumb-transform);
+                            position: absolute;
+                          "
+                          [style.left.%]="sliderPercent"
+                        >
+                          <span
+                            role="slider"
+                            [attr.aria-valuemin]="minBet"
+                            [attr.aria-valuemax]="maxBet"
+                            [attr.aria-valuenow]="selectedAmount"
+                            aria-orientation="horizontal"
+                            data-orientation="horizontal"
+                            tabindex="0"
+                            class="thumb"
+                            (mousedown)="startDrag($event)"
+                            (touchstart)="startDrag($event)"
+                          ></span>
+                        </span>
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      class="maxBetButton"
+                      [disabled]="selectedAmount >= maxBet"
+                      (click)="setToMax()"
+                    >
+                      <span class="textfit-container"
+                        ><span
+                          class="textfit-text"
+                          style="font-size: calc(var(--vp-rem, 1rem) * 0.75)"
+                          >Max</span
+                        ></span
+                      >
+                    </button>
+                  </div>
+                </div>
+                <div class="advance" [class.active]="toggleAdvance">
+                  <div class="advanceWrap">
+                    <button
+                      type="button"
+                      class="simpleModeButton stepButton"
+                      (click)="onToggleAdvance()"
+                    >
+                      <span class="textfit-container"
+                        ><span
+                          class="textfit-text"
+                          style="font-size: calc(var(--vp-rem, 1rem) * 0.875)"
+                          >Simple Mode</span
+                        ></span
+                      >
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                class="submitBetPopup pressableButton"
+                (click)="applyBet()"
+              >
+                Apply Bet
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

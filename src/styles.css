@@ -1,1 +1,125 @@
 /* You can add global styles to this file, and also import other style files */
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+}
+* {
+  touch-action: manipulation !important;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  margin: 0px;
+  padding: 0px;
+}
+html {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background-color: #000;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+body {
+  margin: 0;
+  height: 100%;
+  font-family: Cinzel, sans-serif;
+  font-variation-settings: 'wght' 700;
+  color: #fff;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background-color: #000;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+app-root {
+  display: block;
+  min-height: 100%;
+  background-color: #000;
+}
+
+:root {
+ --spine-canvas-bg: #121212;
+  --bg-dark: #121212;
+  --bg-panel: #23211f;
+  --border-primary: #5e5e12;
+  --color-accent: #38f2e6;
+  --color-highlight: #f9c939;
+  --game-align-items: start;
+  --vimplay-yellow-gradient:
+    linear-gradient(-90deg, #ff9100 0%, #fefe01 100%) padding-box,
+    linear-gradient(90deg, #ff9100 0%, #fefe01 100%) border-box;
+  --modal-bg:
+    linear-gradient(#1b2430, #1b2430) padding-box,
+    linear-gradient(90deg, var(--color-accent) 0%, #47f5ff00 50%, var(--color-accent) 100%)
+      border-box;
+  --modal-border-color: transparent;
+  --modal-heading-justify: center;
+  --modal-title-font-size: 3.6rem;
+  --modal-close-icon-border-color: var(--modal-border-color);
+  --modal-close-icon-bg: var(--modal-bg);
+  --modal-title-color: #fff;
+  --burger-bar-bg: #fff;
+  --bet-history-item-bg: #0a0e17;
+  --bet-history-scrollbar-thumb: linear-gradient(90deg, var(--color-accent) 0%, #00a296 100%);
+  --bet-history-scrollbar-track: #272e39;
+  --bet-history-shadow: 0 -0.16rem 0 0 #37414f inset;
+  --intro-next-btn-bg: linear-gradient(180deg, #ffcd3b 0%, #e34800 100%);
+  --intro-svg-fill: #f46d4e;
+  --intro-checkbox-path: #37ded6;
+  --bet-panel-bg: var(--bg-dark);
+  --bet-panel-border-color: var(--border-primary);
+  --bet-amount-btn-bg: var(--bg-panel);
+  --bet-amount-btn-border-color: var(--color-highlight);
+  --bet-control-bg: var(--bg-panel);
+  --bet-control-border-color: var(--border-primary);
+  --bet-text-accent: #fff;
+  --bet-value-color: #fff;
+  --bet-button-bg: linear-gradient(90deg, #fefe00 0%, #ff9502 100%);
+  --bet-button-border: var(--border-primary);
+  --bet-button-color: #000;
+  --bet-slider-accent: var(--color-accent);
+  --bet-plus-minus-bg: linear-gradient(90deg, #fefe00 0%, #ff9502 100%);
+  --bet-plus-minus-shadow: 0 0 0.272rem 0 var(--border-primary) inset;
+  --menu-bg: #1c222b;
+  --menu-border: linear-gradient(
+    90deg,
+    var(--color-accent) 0%,
+    #47f5ff00 50%,
+    var(--color-accent) 100%
+  );
+  --header-btn-shadow: 0 0 0.4rem 0 #aeebfa4d;
+  --menu-vimplay-bg: var(--vimplay-yellow-gradient);
+  --menu-vimplay-color: #23211f;
+  --result-border-default: 0.1rem solid #83f8ff;
+  --result-color-default: #83f8ff;
+  --result-border-win: 0.1rem solid #0dff00;
+  --result-color-win: #0dff00;
+  --result-border-lose: 0.1rem solid #ff3b3b;
+  --result-color-lose: #ff3b3b;
+  --popup-btn-color: #000;
+  --popup-btn-bg: var(--vimplay-yellow-gradient);
+  --popup-thumb-bg: #ff9502;
+  --popup-wrapper-after-bg: var(--border-primary);
+  --popup-slider-range-bg: #ff9502;
+  --popup-header-color: #fff;
+  --popup-display-selected-color: #fff;
+  --popup-pressable-btn-bg: var(--vimplay-yellow-gradient);
+  --popup-active-color: #fff;
+  --popup-active-border-color: #ff9502;
+  --win-modal-body-bg: var(--vimplay-yellow-gradient);
+  --win-modal-body-padding: 0.125rem;
+  --win-modal-body-border-radius: 2rem;
+  --win-modal-amount-color: #23211f;
+  --win-modal-you-win-bg: black;
+  --win-modal-you-win-color: #fbda03;
+  --win-modal-you-win-padding: 1rem 0;
+  --win-modal-text-gap: 1rem;
+}
