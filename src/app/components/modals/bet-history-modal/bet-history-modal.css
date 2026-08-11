@@ -6055,3 +6055,74 @@ html[dir='rtl'] {
     font-variation-settings: 'wght' 700;
   }
 }
+
+
+/* ===== Magic Spell modal shell overrides ===== */
+.gnAXrm {
+  z-index: 40 !important;
+}
+
+.gnAXrm.show {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+.bTsZoq,
+.dGVefK {
+  border: 0.0875rem solid transparent !important;
+  background: var(--modal-bg) !important;
+  background-color: transparent !important;
+  border-radius: 1rem !important;
+  box-shadow: rgba(0, 0, 0, 0.35) 0 0.5rem 1.5rem 0;
+}
+
+.kTAJFM::after {
+  background: linear-gradient(
+    90deg,
+    #38f2e6 0%,
+    rgba(71, 245, 255, 0) 50%,
+    #38f2e6 100%
+  ) !important;
+}
+
+.ckeJQj {
+  color: #fff !important;
+  font-size: 2.25rem !important;
+  font-variation-settings: "wght" 600;
+}
+
+.jZLjha {
+  border: 0.0875rem solid transparent !important;
+  background:
+    linear-gradient(#1b2430, #1b2430) padding-box,
+    linear-gradient(90deg, #38f2e6 0%, rgba(71, 245, 255, 0.29) 50%, #38f2e6 100%) border-box !important;
+  border-radius: 0.5rem !important;
+  width: 2rem !important;
+  height: 2rem !important;
+}
+
+.iqJovQ {
+  z-index: 39;
+}
+
+.eoJlOr {
+  z-index: 41;
+}
+
+.introChild {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.introChild.active {
+  opacity: 1 !important;
+  pointer-events: auto;
+  transform: translate(0) scale(1) rotateY(0deg) !important;
+}
+
+.nextPrevButton {
+  background: linear-gradient(180deg, #ffcd3b 0%, #e34800 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  border-radius: 0.5rem;
+}

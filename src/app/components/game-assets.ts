@@ -1,93 +1,90 @@
-/** All assets that exist under /public/assets */
+/** Magic Spell assets under /public/assets/magicSpell */
+
 export const GAME_ASSETS = {
   images: {
-    // Brand / header
-    logo: '/assets/logo.png',
-    balance: '/assets/balance.png',
-    volumeBtn: '/assets/volumebtn.png',
-    headerButtonSmall: '/assets/header-button_small.png',
-    wideButtonSmall: '/assets/wide-button_small.png',
+    logo: '/assets/magicSpell/images/header/logo.png',
+    winBanner: '/assets/magicSpell/images/common/win.png',
+    gameBoard: '/assets/magicSpell/images/intro/gameBoard.jpg',
+    gameBoardMobile: '/assets/magicSpell/images/intro/gameBoard-mobile.jpg',
+    makingMove: '/assets/magicSpell/images/intro/makingMove.png',
+    makingMoveMobile: '/assets/magicSpell/images/intro/makingMove-mobile.png',
+    resultStrip: '/assets/magicSpell/images/intro/result.png',
+  },
 
-    // Backgrounds
-    backgroundDesktop: '/assets/backgroundDesktop.png',
-    backgroundMobile: '/assets/backgroundMobile.png',
-    tableBg: '/assets/tableBg.png',
-    mobileviewTableBg: '/assets/mobileviewTablebg.png',
-    tableLight: '/assets/tablelight.png',
-    tableSpots: '/assets/tableSpots.png',
-
-    // Scene lights / atmosphere
-    lightwire: '/assets/lightwire.png',
-    lightsOnwire: '/assets/lightsOnwire.png',
-    lightsStringOdd: '/assets/lights-string-odd_medium.png',
-    purplelight: '/assets/purplelight.png',
-    blueLightLarge: '/assets/blue-light_large.avif',
-    greenlight: '/assets/greenlight.png',
-    lightFrameOn: '/assets/lightFrameOn.png',
-    lightFrametop: '/assets/lightFrametop.png',
-    fog: '/assets/fog.png',
-    fogDark: '/assets/fog-dark.png',
-    redFog: '/assets/redfog.png',
-    smoke: '/assets/smoke.png',
-    greenSmoke: '/assets/greensmoke.png',
-
-    // Characters
-    joker: '/assets/joker.png',
-    jokerOf: '/assets/jokerof.png',
-
-    // Board / gameplay (Pixi)
-    pegLarge: '/assets/peglarge.png',
-    pegLargeActive: '/assets/peglarge-active.png',
-    ballLarge: '/assets/balllarge.png',
-    betMultiplier: '/assets/betMultiplayar.png',
-
-    // UI buttons / panels
-    buttonSmall: '/assets/button_small.png',
-    buttonLarge: '/assets/button_large.png',
-    buttonHoverSmall: '/assets/button-hover_small.png',
-    incrementBtn: '/assets/increment btn.png',
-    betButtonDesktop: '/assets/betbuttondesktop.png',
-    betButtonBg: '/assets/betButtonbg.png',
-    betButtonBgHover: '/assets/betbuttonbghover.png',
-    betButtonBgMobile: '/assets/betbuttonbgmobile.png',
-    betAmountMedium: '/assets/bet-amount_medium.png',
-    betPanelSmall: '/assets/bet-panel_small.png',
-    betPanelDesktopLarge: '/assets/bet-panel-desktop_large.png',
-    betSlipBg: '/assets/betslipbg.png',
-    betSlipBtn: '/assets/betslipbtn.png',
-    disabledBtnBetSlip: '/assets/disbaledbtnbetslip.png',
-    modalLarge: '/assets/modal_large.png',
-
-    // Guide images
-    gameDesktop: '/assets/game-desktop.png',
-    gameMobileMedium: '/assets/game-mobile_medium.png',
+  icons: {
+    burger: '/assets/magicSpell/images/vectors/menu.svg',
+    soundOn: '/assets/magicSpell/images/vectors/sound.svg',
+    soundOff: '/assets/magicSpell/images/vectors/soundOff.svg',
+    vimPlay: '/assets/magicSpell/images/vectors/vimPlay.svg',
+    close: '/assets/magicSpell/images/vectors/close.svg',
+    copy: '/assets/magicSpell/images/vectors/copy.svg',
+    home: '/assets/magicSpell/images/vectors/home.svg',
+    betHistory: '/assets/magicSpell/images/vectors/bet-history.svg',
+    gameGuide: '/assets/magicSpell/images/vectors/game-guide.svg',
+    plus: '/assets/magicSpell/images/vectors/plusIcon.svg',
+    minus: '/assets/magicSpell/images/vectors/minusIcon.svg',
+    amountPopup: '/assets/magicSpell/images/vectors/amountPopupIcon.svg',
+    empty: '/assets/magicSpell/images/vectors/not-data.svg',
   },
 
   spine: {
-    harleysPlinkoAtlas: '/assets/spine/harleysPlinko.atlas',
-    harleysPlinkoSkel: '/assets/spine/harleysPlinko.skel',
-    harleysPlinkoTexture: '/assets/spine/harleysPlinko.png',
+    backgroundSkel: '/assets/magicSpell/spine/background.skel',
+    backgroundAtlas: '/assets/magicSpell/spine/background.atlas',
+    backgroundTexture: '/assets/magicSpell/spine/background.png',
+    mainSkel: '/assets/magicSpell/spine/main-details.skel',
+    mainAtlas: '/assets/magicSpell/spine/main-details.atlas',
+    mainTexture: '/assets/magicSpell/spine/main-details.png',
   },
 
   sounds: {
-    bg: '/assets/sounds/bg-sound.webm',
-    click: '/assets/sounds/button-click.webm',
-    turbo: '/assets/sounds/turbo.webm',
-    pegHit: '/assets/sounds/peg-hit.wav',
+    bg: '/assets/magicSpell/audio/backgroundSound.mp3',
+    click: '/assets/magicSpell/audio/buttonsSound.mp3',
+    secondClick: '/assets/magicSpell/audio/secondLevelButtonsSound.mp3',
+    win: '/assets/magicSpell/audio/win.mp3',
+    lose: '/assets/magicSpell/audio/lose.mp3',
+    spine: '/assets/magicSpell/audio/spine.mp3',
   },
 } as const;
 
-/** Flat list for ResourceLoaderService — every file that exists on disk */
-export const GAME_ASSET_URLS: string[] = [
-  ...Object.values(GAME_ASSETS.images),
-  ...Object.values(GAME_ASSETS.spine),
-  ...Object.values(GAME_ASSETS.sounds),
-];
+/**
+ * Layout tuned to match live Magic Spell stage (1280×720 frame).
+ * `defaultPos` from the Vimplay bundle is spine-local and does not map 1:1
+ * to Pixi screen coords — we place by bounds instead.
+ */
+export const MAGIC_SPELL_SPINE_CONFIG = {
+  designWidth: 1280,
+  designHeight: 720,
+  background: {
+    /** Cover the stage with a little overscan so edges never show */
+    coverPad: 1.02,
+    idleAnimation: 'Background_animation',
+  },
+  main: {
+    /** Wizard visual height as fraction of stage height (live ~0.55) */
+    heightRatio: 0.55,
+    /** Visual-center Y as fraction of stage height (0 = top, 1 = bottom) */
+    anchorY: 0.52,
+    idleAnimations: [
+      { name: 'Wizard_idle_1', probability: 0.4 },
+      { name: 'Wizard_idle_2', probability: 0.2 },
+      { name: 'Wizard_idle_3', probability: 0.2 },
+      { name: 'Wizard_idle_4', probability: 0.2 },
+    ],
+  },
+} as const;
 
-/** Pixi board textures — preload so pegs are ready before loader hides */
-export const PIXI_BOARD_ASSETS = [
-  { alias: 'pegLarge', src: GAME_ASSETS.images.pegLarge },
-  { alias: 'pegLargeActive', src: GAME_ASSETS.images.pegLargeActive },
-  { alias: 'ballLarge', src: GAME_ASSETS.images.ballLarge },
-  { alias: 'binBox', src: GAME_ASSETS.images.betMultiplier },
-] as const;
+export const MAGIC_SPELL_ANIMS = {
+  backgroundIdle: 'Background_animation',
+  wizardIdle: [
+    'Wizard_idle_1',
+    'Wizard_idle_2',
+    'Wizard_idle_3',
+    'Wizard_idle_4',
+    'Wizard_idle_5',
+  ],
+  wizarding: 'Wizard_wizarding_main',
+  win: 'Wizard_win',
+  win2: 'Wizard_win_2',
+  win4: 'Wizard_win_4',
+  lose: 'Wizard_lose_main',
+} as const;

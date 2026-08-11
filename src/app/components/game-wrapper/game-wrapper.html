@@ -3,7 +3,8 @@
     <div class="sc-gyEkAR gjYwXT">
       <div class="sc-gjNFIA gzXzTQ">
         <div class="sc-cTAnsW bEDqIM">
-          <canvas width="3858" height="2170" class="sc-jObViz hkNpoe"></canvas>
+          <!-- Pixi mounts both Magic Spell spines here (background + wizard) -->
+          <div #spineHost class="spine-host hkNpoe"></div>
         </div>
       </div>
       <div class="sc-hmjqoT jbsyeL">
@@ -11,7 +12,7 @@
           <div class="sc-bTfXyB bLlISG">
             <img
               alt="Logo"
-              src="blob:https://magic-spell.vcp0kuq2noxtbfautplyud.com/7e17995c-56d0-4216-ac96-700167bb56c9"
+              src="/assets/magicSpell/images/header/logo.png"
             />
           </div>
           <aside class="sc-jIkVMy bIPPyc"><ul class="sc-ZOuZR eKrAkB"></ul></aside>
@@ -25,18 +26,64 @@
                 >
               </div>
             </div>
-            <button class="sc-cZMOkM hdYHYa pressableButton">
+            <button
+              type="button"
+              class="sc-cZMOkM hdYHYa pressableButton"
+              (click)="toggleSound()"
+              aria-label="Toggle sound"
+            >
               <img
                 alt="speaker"
-                src="blob:https://magic-spell.vcp0kuq2noxtbfautplyud.com/33d17c82-585a-4c8d-a870-b44a38c91176"
-              /></button
-            ><button class="sc-cZMOkM hdYHYa pressableButton">
-              <span class="sc-fvxynf gEpkbQ"
-                ><span class="sc-nVhaW kDNkNV"
-                  ><span class="sc-hiwOQz XxFg"></span><span class="sc-hiwOQz XxFg"></span
-                  ><span class="sc-hiwOQz XxFg"></span></span
-              ></span>
+                [src]="toggle.isSoundOn() ? assets.icons.soundOn : assets.icons.soundOff"
+              />
             </button>
+            <div class="menu-root">
+              <button
+                type="button"
+                class="sc-cZMOkM hdYHYa pressableButton"
+                (click)="toggleMenu(); $event.stopPropagation()"
+                [attr.aria-expanded]="toggle.isOpenMenu()"
+                aria-label="Menu"
+              >
+                <span class="sc-fvxynf gEpkbQ"
+                  ><span class="sc-nVhaW kDNkNV" [class.open]="toggle.isOpenMenu()"
+                    ><span class="sc-hiwOQz XxFg"></span><span class="sc-hiwOQz XxFg"></span
+                    ><span class="sc-hiwOQz XxFg"></span></span
+                ></span>
+              </button>
+              <div
+                class="ms-menu"
+                [class.open]="toggle.isOpenMenu()"
+                [attr.aria-hidden]="!toggle.isOpenMenu()"
+                [attr.inert]="toggle.isOpenMenu() ? null : ''"
+              >
+                <div class="ms-menu__inner">
+                  <button
+                    type="button"
+                    class="ms-menu__item pressableButton"
+                    (click)="openHistory(); $event.stopPropagation()"
+                  >
+                    <span class="ms-menu__icon" aria-hidden="true">
+                      <img alt="" [src]="assets.icons.betHistory" />
+                    </span>
+                    <span class="ms-menu__label">Bet History</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="ms-menu__item pressableButton"
+                    (click)="openGuide(); $event.stopPropagation()"
+                  >
+                    <span class="ms-menu__icon" aria-hidden="true">
+                      <img alt="" [src]="assets.icons.gameGuide" />
+                    </span>
+                    <span class="ms-menu__label">Game Guide</span>
+                  </button>
+                  <div class="ms-menu__brand">
+                    <img class="ms-menu__brand-img" alt="Vimplay" [src]="assets.icons.vimPlay" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -50,60 +97,71 @@
                   <div class="sc-brSyBs llkOWy">
                     <div class="sc-gIDkdn bibXPL">Amount</div>
                     <div class="sc-dkYRWv fdvzkD">
-                      <button type="button" class="sc-XxPfW dqtYIt pressableButton" disabled="">
+                      <button
+                        type="button"
+                        class="sc-XxPfW dqtYIt pressableButton"
+                        (click)="adjustAmount(-0.1)"
+                      >
                         <span class="sc-evchmO ibeDXI"
                           ><img
                             alt="minus-plus-icon"
-                            src="blob:https://magic-spell.vcp0kuq2noxtbfautplyud.com/0dc8a2e8-60e7-4b5c-85f9-16b12fe1140c"
+                            [src]="assets.icons.minus"
                         /></span>
                       </button>
                       <div class="sc-fHeQMZ jUxrJp">
                         <button
                           type="button"
-                          readonly=""
                           aria-label="Amount"
                           class="sc-dtDNWA cmLJhm"
+                          (click)="openBetAmount()"
                         >
                           <span class="textfit-container"
                             ><span class="textfit-text" style="font-size: 1.8rem"
-                              ><span></span><span>0.10</span></span
+                              ><span></span><span>{{ displayAmount }}</span></span
                             ></span
                           >
                         </button>
                       </div>
-                      <button type="button" class="sc-XxPfW dqtYIt pressableButton">
+                      <button
+                        type="button"
+                        class="sc-XxPfW dqtYIt pressableButton"
+                        (click)="adjustAmount(0.1)"
+                      >
                         <span class="sc-evchmO ibeDXI"
                           ><img
                             alt="minus-plus-icon"
-                            src="blob:https://magic-spell.vcp0kuq2noxtbfautplyud.com/0aa61f1b-d4fe-41c1-b768-b1d724eae2ad"
+                            [src]="assets.icons.plus"
                         /></span>
                       </button>
                     </div>
                   </div>
                   <div class="sc-bXTggn hsvjTl">
-                    <button class="sc-eGRUIf dIYNiB">
-                      <img
-                        alt="amountPopupIcon"
-                        src="blob:https://magic-spell.vcp0kuq2noxtbfautplyud.com/76132d81-57fa-45c5-b7cf-db1ca8896ca6"
-                      />
+                    <button type="button" class="sc-eGRUIf dIYNiB" (click)="openBetAmount()">
+                      <img alt="amountPopupIcon" [src]="assets.icons.amountPopup" />
                     </button>
                   </div>
                   <div class="sc-ilfuBz SBmOe">
                     <div class="sc-uojkC jebHyb">Payout</div>
                     <div tabindex="0" aria-label="Payout multiplier" class="sc-jHkVTj cKkKNN">
-                      <button type="button" class="sc-bQtKCm jozTJn pressableButton">
+                      <button
+                        type="button"
+                        class="sc-bQtKCm jozTJn pressableButton"
+                        (click)="adjustPayout(-0.1)"
+                      >
                         <span aria-label="Decrease multiplier" class="sc-fXErLa gMfbxS"
-                          ><img
-                            alt="minus-icon"
-                            src="blob:https://magic-spell.vcp0kuq2noxtbfautplyud.com/0dc8a2e8-60e7-4b5c-85f9-16b12fe1140c"
+                          ><img alt="minus-icon" [src]="assets.icons.minus"
                         /></span>
                       </button>
-                      <div class="sc-FNZOL bHeCpf"><div class="sc-jWUChQ bBgTGA">2.00x</div></div>
-                      <button type="button" class="sc-bQtKCm jozTJn pressableButton">
+                      <div class="sc-FNZOL bHeCpf">
+                        <div class="sc-jWUChQ bBgTGA">{{ displayPayout }}</div>
+                      </div>
+                      <button
+                        type="button"
+                        class="sc-bQtKCm jozTJn pressableButton"
+                        (click)="adjustPayout(0.1)"
+                      >
                         <span aria-label="Increase multiplier" class="sc-fXErLa gMfbxS"
-                          ><img
-                            alt="plus-icon"
-                            src="blob:https://magic-spell.vcp0kuq2noxtbfautplyud.com/0aa61f1b-d4fe-41c1-b768-b1d724eae2ad"
+                          ><img alt="plus-icon" [src]="assets.icons.plus"
                         /></span>
                       </button>
                     </div>
@@ -124,4 +182,68 @@
       aria-atomic="false"
     ></section>
   </div>
+
+  <app-bet-history-modal />
+  <app-guideness-modal />
+  <app-bet-amount (betApplied)="onBetApplied($event)" />
+  <app-autoplay-modal />
+
+  <!-- Spine animation debug controller -->
+  <button type="button" class="anim-panel-toggle" (click)="togglePanel()">
+    {{ showAnimPanel ? 'Hide' : 'Anims' }}
+  </button>
+
+  @if (showAnimPanel) {
+    <aside class="anim-panel">
+      <header class="anim-panel__head">
+        <strong>Spine Animations</strong>
+        @if (!ready) {
+          <span class="anim-panel__status">Loading…</span>
+        } @else if (error) {
+          <span class="anim-panel__status anim-panel__status--err">{{ error }}</span>
+        }
+      </header>
+
+      <div class="anim-panel__controls">
+        <button type="button" class="anim-btn anim-btn--ctrl" [class.active]="loop" (click)="toggleLoop()">
+          Loop {{ loop ? 'ON' : 'OFF' }}
+        </button>
+        <button type="button" class="anim-btn anim-btn--ctrl" (click)="resumeIdle()">
+          Resume Idle
+        </button>
+      </div>
+
+      <section class="anim-panel__section">
+        <h4>Background ({{ backgroundAnims.length }})</h4>
+        <div class="anim-panel__grid">
+          @for (name of backgroundAnims; track name) {
+            <button
+              type="button"
+              class="anim-btn"
+              [class.active]="currentBgAnim === name"
+              (click)="playBackground(name)"
+            >
+              {{ name }}
+            </button>
+          }
+        </div>
+      </section>
+
+      <section class="anim-panel__section">
+        <h4>Wizard ({{ wizardAnims.length }})</h4>
+        <div class="anim-panel__grid">
+          @for (name of wizardAnims; track name) {
+            <button
+              type="button"
+              class="anim-btn"
+              [class.active]="currentWizardAnim === name"
+              (click)="playWizard(name)"
+            >
+              {{ name }}
+            </button>
+          }
+        </div>
+      </section>
+    </aside>
+  }
 </div>

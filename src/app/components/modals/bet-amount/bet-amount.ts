@@ -55,6 +55,7 @@ export class BetAmount implements OnDestroy {
   @Output() betApplied = new EventEmitter<number>();
 
   applyBet(): void {
+    this.betSlipToggle.setBetAmount(this.selectedAmount);
     this.closePopup.emit();
     this.betApplied.emit(this.selectedAmount);
     this.betSlipToggle.close();

@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GameWrapper } from './components/game-wrapper/game-wrapper';
 
@@ -8,7 +8,7 @@ import { GameWrapper } from './components/game-wrapper/game-wrapper';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {
+export class App implements OnInit, OnDestroy {
   protected readonly title = signal('magic-spell');
     private lastWidth = 0;
   private lastHeight = 0;
@@ -18,6 +18,7 @@ export class App {
   private readonly onOrientation = () => this.handleOrientationChange();
 
   ngOnInit(): void {
+    document.documentElement.classList.add('magicSpell');
     this.updateViewportUnits();
     window.addEventListener('resize', this.onResize);
     window.addEventListener('orientationchange', this.onOrientation);
@@ -64,11 +65,12 @@ export class App {
 
   setRootFontSize(vw: number, vh: number): void {
     const isPortrait = vh > vw;
+    // Magic Spell / Vimplay design: 128rem × 72rem == 1280×720 → 1rem = 10px at ref
     const refWidth = isPortrait ? 320 : 1280;
-    const refHeight = isPortrait ? 540 : 720;
+    const refHeight = isPortrait ? 560 : 720;
     const aspectRatio = refHeight / refWidth;
-    const maxFontSize = isPortrait ? 50 : 30;
-    const baseMultiplier = 16;
+    const maxFontSize = isPortrait ? 20 : 20;
+    const baseMultiplier = 10;
     const currentAspectRatio = vh / vw;
 
     let fontSize =
