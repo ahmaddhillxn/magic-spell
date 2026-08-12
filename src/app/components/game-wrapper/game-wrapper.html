@@ -10,10 +10,7 @@
       <div class="sc-hmjqoT jbsyeL">
         <div class="sc-eLwIuu QXtxZ">
           <div class="sc-bTfXyB bLlISG">
-            <img
-              alt="Logo"
-              src="/assets/magicSpell/images/header/logo.png"
-            />
+            <img alt="Logo" src="/assets/magicSpell/images/header/logo.png" />
           </div>
           <aside class="sc-jIkVMy bIPPyc"><ul class="sc-ZOuZR eKrAkB"></ul></aside>
           <div class="sc-kHOZcY NYQnx">
@@ -43,7 +40,7 @@
                 class="sc-cZMOkM hdYHYa pressableButton"
                 (click)="toggleMenu(); $event.stopPropagation()"
                 [attr.aria-expanded]="toggle.isOpenMenu()"
-                aria-label="Menu"
+                [attr.aria-label]="toggle.isOpenMenu() ? 'Close menu' : 'Menu'"
               >
                 <span class="sc-fvxynf gEpkbQ"
                   ><span class="sc-nVhaW kDNkNV" [class.open]="toggle.isOpenMenu()"
@@ -52,34 +49,44 @@
                 ></span>
               </button>
               <div
-                class="ms-menu"
+                data-ignore-click="menu"
+                class="sc-lcesIF iNElpo"
                 [class.open]="toggle.isOpenMenu()"
                 [attr.aria-hidden]="!toggle.isOpenMenu()"
                 [attr.inert]="toggle.isOpenMenu() ? null : ''"
               >
-                <div class="ms-menu__inner">
-                  <button
-                    type="button"
-                    class="ms-menu__item pressableButton"
-                    (click)="openHistory(); $event.stopPropagation()"
-                  >
-                    <span class="ms-menu__icon" aria-hidden="true">
-                      <img alt="" [src]="assets.icons.betHistory" />
-                    </span>
-                    <span class="ms-menu__label">Bet History</span>
-                  </button>
-                  <button
-                    type="button"
-                    class="ms-menu__item pressableButton"
-                    (click)="openGuide(); $event.stopPropagation()"
-                  >
-                    <span class="ms-menu__icon" aria-hidden="true">
-                      <img alt="" [src]="assets.icons.gameGuide" />
-                    </span>
-                    <span class="ms-menu__label">Game Guide</span>
-                  </button>
-                  <div class="ms-menu__brand">
-                    <img class="ms-menu__brand-img" alt="Vimplay" [src]="assets.icons.vimPlay" />
+                <div class="animation-wrapper fade-blur" [class.active]="toggle.isOpenMenu()">
+                  <div class="sc-gGCDhO cKZWOY">
+                    <div class="sc-ehCKTc dHUKyk">
+                      <button
+                        type="button"
+                        class="sc-clIByv hDPpKX pressableButton"
+                        (click)="openHistory(); $event.preventDefault(); $event.stopPropagation()"
+                      >
+                        <img alt="" class="sc-GalIt dDYsvx" [src]="assets.icons.betHistory" />
+                        <div class="sc-faUnrM iRKHnP">
+                          <span class="textfit-container"
+                            ><span class="textfit-text" style="font-size: 1.2rem"
+                              >Bet History</span
+                            ></span
+                          >
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        class="sc-clIByv hDPpKX pressableButton"
+                        (click)="openGuide(); $event.stopPropagation()"
+                      >
+                        <img alt="" class="sc-GalIt dDYsvx" [src]="assets.icons.gameGuide" />
+                        <div class="sc-faUnrM iRKHnP">
+                          <span class="textfit-container"
+                            ><span class="textfit-text" style="font-size: 1.2rem"
+                              >Game Guide</span
+                            ></span
+                          >
+                        </div>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -103,9 +110,7 @@
                         (click)="adjustAmount(-0.1)"
                       >
                         <span class="sc-evchmO ibeDXI"
-                          ><img
-                            alt="minus-plus-icon"
-                            [src]="assets.icons.minus"
+                          ><img alt="minus-plus-icon" [src]="assets.icons.minus"
                         /></span>
                       </button>
                       <div class="sc-fHeQMZ jUxrJp">
@@ -128,9 +133,7 @@
                         (click)="adjustAmount(0.1)"
                       >
                         <span class="sc-evchmO ibeDXI"
-                          ><img
-                            alt="minus-plus-icon"
-                            [src]="assets.icons.plus"
+                          ><img alt="minus-plus-icon" [src]="assets.icons.plus"
                         /></span>
                       </button>
                     </div>
@@ -205,7 +208,12 @@
       </header>
 
       <div class="anim-panel__controls">
-        <button type="button" class="anim-btn anim-btn--ctrl" [class.active]="loop" (click)="toggleLoop()">
+        <button
+          type="button"
+          class="anim-btn anim-btn--ctrl"
+          [class.active]="loop"
+          (click)="toggleLoop()"
+        >
           Loop {{ loop ? 'ON' : 'OFF' }}
         </button>
         <button type="button" class="anim-btn anim-btn--ctrl" (click)="resumeIdle()">

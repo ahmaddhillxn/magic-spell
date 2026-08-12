@@ -120,11 +120,13 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   }
 
   openHistory(): void {
-    this.toggle.openBetHistory();
+    this.toggle.closeMenu();
+    setTimeout(() => this.toggle.openBetHistory(), 40);
   }
 
   openGuide(): void {
-    this.toggle.openGameGuide();
+    this.toggle.closeMenu();
+    setTimeout(() => this.toggle.openGameGuide(), 40);
   }
 
   openBetAmount(): void {
