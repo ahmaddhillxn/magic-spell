@@ -6,7 +6,7 @@
   ></div>
 }
 
-<div class="sc-kWtpeM jXYahu" [class.show]="visibility.visible()">
+<div class="sc-kWtpeM jXYahu" [class.show]="visibility.visible()" (click)="$event.stopPropagation()">
   <div
     class="animation-wrapper fade-to-bottom"
     [class.active]="visibility.active()"
@@ -45,8 +45,7 @@
                     <button
                       type="button"
                       class="advanceButton stepButton"
-                      disabled
-                      aria-disabled="true"
+                      (click)="onToggleAdvance()"
                     >
                       <span class="textfit-container"
                         ><span
@@ -171,7 +170,7 @@
                 class="submitBetPopup pressableButton"
                 (click)="applyBet()"
               >
-                Apply Bet
+                Apply
               </button>
             </div>
           </div>

@@ -4772,13 +4772,19 @@ html[dir='rtl'] {
 }
 
 .jXYahu {
-  position: fixed;
-  left: 50%;
-  top: 58%;
-  width: 20rem;
-  transform: translate(-50%, 0%) translateZ(0px);
-  backface-visibility: hidden;
+  position: absolute;
+  width: 32rem;
+  max-width: 95%;
+  --vp-rem: 1.6rem;
+  font-family: Rubik, sans-serif;
+  font-variation-settings: 'wght' 400;
+  transition:
+    opacity 0.5s ease-in-out,
+    transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  transform: translate(-50%, -100%);
   z-index: 6;
+  top: -20%;
+  left: 50%;
   visibility: hidden;
   pointer-events: none;
 }
@@ -4803,18 +4809,15 @@ html[dir='rtl'] {
   pointer-events: auto;
 }
 
-@media (orientation: portrait) {
+@media (orientation: portrait) and (max-width: 900px) {
   .jXYahu {
-    position: fixed;
-    left: 50%;
-    top: 70%;
-    max-width: 90%;
-    transform: translate(-50%, -50%) translateZ(0px);
+    max-width: 95%;
+    --vp-rem: 1.4rem;
   }
 }
 
 .etjbVm {
-  padding: 0.875rem;
+  padding: 0;
   background-size: 100% 100%;
 }
 
@@ -6107,32 +6110,147 @@ html[dir='rtl'] {
 }
 
 
-/* ===== Magic Spell bet-amount shell overrides ===== */
+/* ===== Magic Spell bet-amount — gold/yellow live design ===== */
+:host {
+  display: contents;
+}
+
 .jXYahu {
   z-index: 40 !important;
+  position: absolute !important;
+  width: 32rem !important;
+  max-width: 95% !important;
+  --vp-rem: 1.6rem;
+  font-family: Rubik, sans-serif !important;
+  font-variation-settings: 'wght' 400 !important;
+  transition:
+    opacity 0.5s ease-in-out,
+    transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) !important;
+  transform: translate(-50%, -100%) !important;
+  top: -20% !important;
+  left: 50% !important;
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
+  .jXYahu {
+    max-width: 95% !important;
+    --vp-rem: 1.4rem;
+  }
 }
 
 .bet-amount-overlay {
   z-index: 39 !important;
 }
 
-.etjbVm,
-.popupMain,
-.popupContainer,
-.popupWrapper,
-.popupInner {
-  border-radius: 1rem;
+.popupContainer {
+  padding: calc(var(--vp-rem, 1rem) * 0.125) !important;
+  margin: calc(var(--vp-rem, 1rem) * 0.125) !important;
+  background: linear-gradient(277.81deg, #ff9500 18.32%, #ff0 74.27%) !important;
+  border-radius: calc(var(--vp-rem, 1rem) * 0.875) !important;
 }
 
 .etjbVm .popupWrapper,
 .popupWrapper {
-  border: 0.0875rem solid transparent !important;
-  background:
-    linear-gradient(#1b2430, #1b2430) padding-box,
-    linear-gradient(90deg, #38f2e6 0%, rgba(71, 245, 255, 0) 50%, #38f2e6 100%) border-box !important;
-  box-shadow: rgba(0, 0, 0, 0.35) 0 0.5rem 1.5rem 0;
+  border: none !important;
+  background: radial-gradient(50% 50%, #221100 0%, #0b0b0b 100%) !important;
+  border-radius: calc(var(--vp-rem, 1rem) * 0.75) !important;
+  padding: calc(var(--vp-rem, 1rem) * 0.25) !important;
+  box-shadow: none !important;
 }
 
-.etjbVm .popupWrapper::after {
+.etjbVm .popupWrapper::after,
+.popupWrapper::after {
   display: none !important;
+}
+
+.popupInner {
+  gap: calc(var(--vp-rem, 1rem) * 0.625) !important;
+}
+
+.nonAdvance {
+  gap: calc(var(--vp-rem, 1rem) * 0.625) !important;
+}
+
+.betAmountWrapper,
+.stepsWrapper {
+  padding: calc(var(--vp-rem, 1rem) * 0.5) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+}
+
+.inputWrapper {
+  padding: calc(var(--vp-rem, 1rem) * 0.25) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+}
+
+.stepButton,
+.simpleModeButton {
+  height: calc(var(--vp-rem, 1rem) * 2.125) !important;
+  font-size: calc(var(--vp-rem, 1rem) * 0.875) !important;
+  color: #fff !important;
+  border: calc(var(--vp-rem, 1rem) * 0.075) solid #fff !important;
+  background: transparent !important;
+}
+
+.etjbVm .popupWrapper .stepButton.active,
+.stepButton.active,
+.simpleModeButton.active {
+  color: rgb(255, 161, 0) !important;
+  border-color: rgb(255, 161, 0) !important;
+  background: transparent !important;
+}
+
+.betAmountTitle,
+.amountNumber {
+  font-size: calc(var(--vp-rem, 1rem) * 1) !important;
+}
+
+.betAmountTitle {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.amountNumber {
+  color: #fff !important;
+}
+
+.minBetButton,
+.maxBetButton {
+  width: calc(var(--vp-rem, 1rem) * 2) !important;
+  height: calc(var(--vp-rem, 1rem) * 2) !important;
+  color: rgb(46, 20, 2) !important;
+  background: linear-gradient(277.81deg, rgb(255, 149, 0) 18.32%, rgb(255, 255, 0) 74.27%) !important;
+}
+
+.etjbVm .popupWrapper .thumb,
+.thumb {
+  background: rgb(255, 255, 0) !important;
+}
+
+.etjbVm .popupWrapper .tracker,
+.tracker {
+  --tracker-active: rgb(255, 149, 0);
+  --tracker-inactive: gray;
+}
+
+.SliderRoot > span:last-of-type {
+  top: 50%;
+  transform: translate(-50%, -50%) !important;
+}
+
+.etjbVm .popupWrapper .slider-range,
+.SliderRoot .slider-range {
+  background: rgb(255, 149, 0) !important;
+}
+
+.etjbVm .popupWrapper .submitBetPopup,
+.submitBetPopup {
+  color: rgb(46, 20, 2) !important;
+  background: linear-gradient(277.81deg, rgb(255, 149, 0) 18.32%, rgb(255, 255, 0) 74.27%) !important;
+  box-shadow: none !important;
+  font-weight: 700;
+  font-family: Rubik, sans-serif;
+  font-size: calc(var(--vp-rem, 1rem) * 1) !important;
+  padding: calc(var(--vp-rem, 1rem) * 0.5) !important;
+  border-radius: calc(var(--vp-rem, 1rem) * 0.625) !important;
 }

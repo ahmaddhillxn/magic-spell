@@ -99,6 +99,7 @@
           <div class="sc-cbTBgv bHtnLq"></div>
           <div class="sc-fbydFU dkLwGW">
             <div class="sc-GEbWB iYfAPj">
+              <app-bet-amount (betApplied)="onBetApplied($event)" />
               <div class="sc-ctqRRG cynHSv">
                 <div class="sc-dFtBrR kGTFjx">
                   <div class="sc-brSyBs llkOWy">
@@ -188,7 +189,6 @@
 
   <app-bet-history-modal />
   <app-guideness-modal />
-  <app-bet-amount (betApplied)="onBetApplied($event)" />
   <app-autoplay-modal />
 
   <!-- Spine animation debug controller -->
