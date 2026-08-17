@@ -290,6 +290,7 @@ export class Toggle {
 
   openBetHistory() {
     this.closeMenu();
+    this._isOpenGameQuideModal.set(false);
     this._isOpenBetHistory.set(true);
   }
   closeBetHistory() {
@@ -298,6 +299,7 @@ export class Toggle {
 
   openGameGuide() {
     this.closeMenu();
+    this._isOpenBetHistory.set(false);
     this._isOpenGameQuideModal.set(true);
   }
   closeGameGuide() {

@@ -7,6 +7,7 @@ import {
   OnDestroy,
   ViewChild,
   inject,
+  signal,
 } from '@angular/core';
 import { Application } from 'pixi.js';
 import { MagicSpellScene } from '../scene-manager/magic-spell-scene';
@@ -30,6 +31,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   readonly assets = GAME_ASSETS;
   readonly toggle = inject(Toggle);
   readonly betAmount = inject(BetAmountService);
+  readonly guideOpen = signal(false);
 
   ready = false;
   error = '';
@@ -112,6 +114,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   onDocumentClick(event: MouseEvent): void {
     const target = event.target as HTMLElement | null;
     if (target?.closest('.menu-root')) return;
+    if (target?.closest('app-bet-history-modal, app-guideness-modal')) return;
     if (this.toggle.isOpenMenu()) this.toggle.closeMenu();
   }
 
@@ -119,14 +122,23 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     this.toggle.toggleMenu();
   }
 
-  openHistory(): void {
-    this.toggle.closeMenu();
-    setTimeout(() => this.toggle.openBetHistory(), 40);
+  openHistory(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.toggle.openBetHistory();
   }
 
-  openGuide(): void {
+  openGuide(event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
     this.toggle.closeMenu();
-    setTimeout(() => this.toggle.openGameGuide(), 40);
+    this.guideOpen.set(true);
+    this.toggle.openGameGuide();
+  }
+
+  closeGuide(): void {
+    this.guideOpen.set(false);
+    this.toggle.closeGameGuide();
   }
 
   openBetAmount(): void {

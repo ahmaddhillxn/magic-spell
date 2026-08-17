@@ -13,6 +13,7 @@ import { ModalVisibilityController } from '../../services/modal-visibility';
 })
 export class BetHistoryModal implements OnInit, OnDestroy {
   historyList: any[] = [];
+  expandedIndex: number | null = null;
   readonly visibility = new ModalVisibilityController(500);
   private readonly destroy$ = new Subject<void>();
 
@@ -21,7 +22,9 @@ export class BetHistoryModal implements OnInit, OnDestroy {
     private historyService: BetHistoryService,
   ) {
     effect(() => {
-      this.visibility.sync(this.betSlipToggle.isOpenBetHistory());
+      const open = this.betSlipToggle.isOpenBetHistory();
+      this.visibility.sync(open);
+      if (!open) this.expandedIndex = null;
     });
   }
 
@@ -38,6 +41,43 @@ export class BetHistoryModal implements OnInit, OnDestroy {
     this.visibility.destroy();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  toggleExpand(index: number): void {
+    this.expandedIndex = this.expandedIndex === index ? null : index;
+  }
+
+  isExpanded(index: number): boolean {
+    return this.expandedIndex === index;
+  }
+
+  isLoss(item: any): boolean {
+    return this.isLossEntry(item);
+  }
+
+  getDateLabel(item: any): string {
+    return `${this.getHourValue(item)} ${this.getDayValue(item)}`;
+  }
+
+  getBetId(item: any): string {
+    const id = item?.id ?? item?.betId ?? item?._id;
+    return id == null || id === '' ? '--' : String(id);
+  }
+
+  getPayout(item: any): string {
+    const value = this.toNumber(item?.payout) ?? this.toNumber(item?.targetPayout);
+    return value == null ? '--' : value.toFixed(2);
+  }
+
+  getResult(item: any): string {
+    const value = this.toNumber(item?.result) ?? this.toNumber(item?.multiplier);
+    return value == null ? '--' : value.toFixed(2);
+  }
+
+  getMobileBadge(item: any): string {
+    if (this.isLossEntry(item)) return 'Lose';
+    const multiplier = this.getMultiplier(item);
+    return multiplier === '--' || multiplier === '-' ? 'Lose' : `X ${multiplier}`;
   }
 
   getBetTime(item: any): Date | string | null {

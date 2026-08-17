@@ -1076,7 +1076,7 @@ img {
 /* Live Magic Spell header menu (iNElpo — cleaned) */
 .menu-root {
   position: relative;
-  z-index: 20;
+  z-index: 50;
 }
 
 .iNElpo {
@@ -1086,12 +1086,17 @@ img {
   flex-direction: column;
   top: calc(100% + 0.35rem);
   right: 0;
-  z-index: 30;
+  z-index: 60;
   pointer-events: none;
 }
 
 .iNElpo.open {
   pointer-events: auto;
+}
+
+.iNElpo.open .hDPpKX {
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .animation-wrapper {
@@ -8160,6 +8165,7 @@ html[dir='rtl'] {
   width: 100%;
   justify-content: center;
   position: relative;
+  z-index: 5;
 }
 
 .QXtxZ {
@@ -9041,4 +9047,23 @@ html[dir='rtl'] {
   bottom: auto;
   top: 50%;
   transform: translateY(-50%) rotate(-45deg);
+}
+
+.ms-guide-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  pointer-events: auto;
+}
+
+.ms-guide-layer app-guideness-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }

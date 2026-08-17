@@ -61,7 +61,7 @@
                       <button
                         type="button"
                         class="sc-clIByv hDPpKX pressableButton"
-                        (click)="openHistory(); $event.preventDefault(); $event.stopPropagation()"
+                        (click)="openHistory($event)"
                       >
                         <img alt="" class="sc-GalIt dDYsvx" [src]="assets.icons.betHistory" />
                         <div class="sc-faUnrM iRKHnP">
@@ -75,7 +75,7 @@
                       <button
                         type="button"
                         class="sc-clIByv hDPpKX pressableButton"
-                        (click)="openGuide(); $event.stopPropagation()"
+                        (click)="openGuide($event)"
                       >
                         <img alt="" class="sc-GalIt dDYsvx" [src]="assets.icons.gameGuide" />
                         <div class="sc-faUnrM iRKHnP">
@@ -186,9 +186,14 @@
       aria-atomic="false"
     ></section>
   </div>
+</div>
 
   <app-bet-history-modal />
-  <app-guideness-modal />
+  @if (guideOpen()) {
+    <div class="ms-guide-layer">
+      <app-guideness-modal (closed)="closeGuide()" />
+    </div>
+  }
   <app-autoplay-modal />
 
   <!-- Spine animation debug controller -->
@@ -254,4 +259,3 @@
       </section>
     </aside>
   }
-</div>

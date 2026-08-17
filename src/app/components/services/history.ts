@@ -8,6 +8,7 @@ export interface SpinResultPayload {
   multiplier: number;
   winAmount: number;
   win: boolean;
+  payout?: number;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -1,142 +1,338 @@
-<div
-  class="sc-iMWBiG gnAXrm"
-  [class.show]="visibility.visible()"
-  [class.hide]="!visibility.visible()"
->
+<div class="vim--modal vim--modal--open">
   <div
-    class="sc-bBeLUw iqJovQ"
-    [class.active]="visibility.active()"
-    (click)="betSlipToggle.closeGameGuide()"
+    class="vim--modal__backdrop"
+    (click)="$event.stopPropagation(); close()"
   ></div>
-  <div class="sc-fvtFIh eoJlOr">
-    <div class="animation-wrapper fade-to-bottom" [class.active]="visibility.active()">
-      <div class="sc-ihgnxC dGVefK">
-        <div class="sc-jMakVn kZlOrS">
-          <div class="sc-hwdzOS kTAJFM">
-            <div class="sc-jaXxmD gZocBK"><div class="sc-ibQAlc ckeJQj">Game Guide</div></div>
-            <button
-              type="button"
-              class="sc-jGKxIN jZLjha"
-              (click)="betSlipToggle.closeGameGuide()"
-              aria-label="Close guide"
-            >
-              <span class="sc-iHbSHG huhUrz"
-                ><span class="sc-klVQfr bdatcO"></span><span class="sc-klVQfr bdatcO"></span
-              ></span>
-            </button>
-          </div>
-          <div class="sc-iMTnTM bFJnrU">
-            <div class="sc-krNlrx drIdzz">
-              <div class="sc-Srznz kAqHbR">
-                <div class="intro">
-                  <div class="introContentWrapper">
-                    <div class="introContent">
-                      @for (s of slides; track s.title; let i = $index) {
-                        <div
-                          class="introChild"
-                          [class.active]="currentSlide === i"
-                          [class.before-active]="currentSlide > i"
-                          [class.after-active]="currentSlide < i"
-                        >
-                          <div class="sc-czkgLO iKAXMU">
-                            @if (s.description && i === 0) {
-                              <div class="sc-hTUWRP hzebhN">
-                                <div class="sc-satoA cbObak">{{ s.description }}</div>
-                              </div>
-                            }
-
-                            <div class="sc-dycYrq gKbnYa">
-                              <div class="sc-isRoRf ekfGQK">
-                                <div class="sc-dWZqqG lcrWUW">{{ i + 1 }}</div>
-                                {{ s.title }}
-                              </div>
-
-                              @if (s.description && i !== 0) {
-                                <div class="sc-satoA cbObak">{{ s.description }}</div>
-                              }
-
-                              @if (s.listItems?.length) {
-                                <ul class="sc-eNSrOZ kLyZau">
-                                  @for (item of s.listItems; track item) {
-                                    <li class="sc-fsvrbO cHthOJ">{{ item }}</li>
-                                  }
-                                </ul>
-                              }
-
-                              @if (s.image && !s.showLimits) {
-                                <div class="sc-lizKOg dLdiZi">
-                                  <picture>
-                                    @if (s.imageMobile) {
-                                      <source [srcset]="s.imageMobile" media="(max-width: 900px)" />
-                                    }
-                                    <img [alt]="s.title" [src]="s.image" />
-                                  </picture>
+  <div class="vim--modal__anim-wrap vim--modal__anim-wrap--open">
+    <div class="animation-wrapper">
+      <div
+        class="vim--modal__inner vim--modal__inner--open"
+        style="
+          --modal-width: 44.8rem;
+          --modal-height: 59.2rem;
+          --modal-mobile-width: 28.8rem;
+          --modal-mobile-height: 46.4rem;
+        "
+      >
+        <div class="vim--modal__heading-wrapper">
+          <div class="vim--modal__heading"><div class="vim--modal__title">Game Guide</div></div>
+          <button
+            type="button"
+            class="vim--modal__close-btn"
+            (click)="close()"
+            aria-label="Close guide"
+          >
+            <span class="vim--modal__close-icon-wrapper"
+              ><svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M14.3607 10L19.935 4.42574C20.0217 4.33906 20.0217 4.19237 19.935 4.10568L15.8943 0.0650108C15.8076 -0.0216703 15.6609 -0.0216703 15.5743 0.0650108L10 5.63927L4.42574 0.0650108C4.33906 -0.0216703 4.19237 -0.0216703 4.10568 0.0650108L0.0650108 4.10568C-0.0216703 4.19237 -0.0216703 4.33906 0.0650108 4.42574L5.63927 10L0.0650108 15.5743C-0.0216703 15.6609 -0.0216703 15.8076 0.0650108 15.8943L4.10568 19.935C4.19237 20.0217 4.33906 20.0217 4.42574 19.935L10 14.3607L15.5743 19.935C15.6609 20.0217 15.8076 20.0217 15.8943 19.935L19.935 15.8943C20.0217 15.8076 20.0217 15.6609 19.935 15.5743L14.3607 10Z"
+                  fill="white"
+                ></path></svg
+            ></span>
+          </button>
+        </div>
+        <div class="vim--modal__body">
+          <div class="intro">
+            <div class="introContentWrapper">
+              <div class="introContent">
+                @for (s of slides; track s.title; let i = $index) {
+                  <div
+                    class="introChild"
+                    [class.active]="currentSlide === i"
+                    [class.before-active]="currentSlide > i"
+                    [class.after-active]="currentSlide < i"
+                  >
+                    @if (s.welcome) {
+                      <div class="sc-crHjuH mLvrK">
+                        @if (s.description) {
+                          <div class="sc-eggEi fDyFZh">{{ s.description }}</div>
+                        }
+                        <div class="sc-hBUSFb cvGQuT">
+                          <div class="sc-fotPOC cxyIyL">{{ i + 1 }}</div>
+                          <span class="sc-fFejRA ivZjMr">{{ s.title }}</span>
+                        </div>
+                        @if (s.body) {
+                          <div class="sc-bkkiih dEQynE">{{ s.body }}</div>
+                        }
+                        @if (s.image) {
+                          <div class="sc-bqiQet cgkSSi">
+                            <img [alt]="s.title" [src]="s.image" />
+                          </div>
+                        }
+                      </div>
+                    } @else if (s.betSelector) {
+                      <div class="sc-iwjgNJ bXldcz">
+                        <div class="sc-cxpTYp iCoFvV">
+                          <div class="sc-llYVCM ldLWjr">{{ i + 1 }}</div>
+                          <span class="sc-iJKPnr dyHhvT">{{ s.title }}</span>
+                        </div>
+                        @if (s.description) {
+                          <div class="sc-bkkiih dEQynE">{{ s.description }}</div>
+                        }
+                        <div class="guide-bet-preview">
+                          <div class="guide-bet-preview__icon-wrap">
+                            <img [src]="coinIcon" alt="" />
+                          </div>
+                          <div class="guide-bet-amount-shell" #guideBetShell>
+                            <div class="popupMain">
+                              <div class="popupContainer" #introPopupContainer>
+                                <div
+                                  class="intro-cursor"
+                                  [class.clickAnimation]="cursorClicking"
+                                  [style.left.px]="cursorLeftPx"
+                                  [style.top.px]="cursorTopPx"
+                                  [style.opacity]="cursorOpacity"
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 512 512"
+                                    aria-hidden="true"
+                                  >
+                                    <path
+                                      d="M278.33,506.06c-7.25,0-13.82-4.27-16.75-10.89l-60.24-137.24-6.2,5.94c-12,11.5-24,22.97-36,34.45-12,11.48-24,22.95-36,34.45-4.39,4.19-9.18,5.08-12.41,5.08-4.69,0-9.36-1.85-12.8-5.07-2.57-2.41-5.64-6.66-5.64-13.28V24.3c0-11.43,9.35-18.26,18.39-18.26,4.54,0,8.78,1.69,12.26,4.88l290.99,267.49c6.52,6.03,6.78,14.04,4.83,19.53-1.94,5.5-7.19,11.58-16.07,12.16l-108.43,6.84,3.43,7.85c19.43,44.49,38.74,88.54,56.7,129.51,1.97,4.49,2.07,9.46.28,14.01-1.78,4.51-5.21,8.05-9.66,9.97l-59.35,26.22c-2.33,1.02-4.81,1.55-7.34,1.55Z"
+                                      fill="#fff"
+                                    />
+                                  </svg>
                                 </div>
-                              }
-
-                              @if (s.showLimits) {
-                                <div class="sc-jOnpCn cmkduJ introContentDescription">
-                                  <div class="game-limits">
-                                    <div class="game-limits-title">Game Limits</div>
-                                    <div class="game-limits-text">
-                                      Game limits are set by the operator. The limits for this game
-                                      are shown below.
+                                <div class="popupWrapper">
+                                  <div class="popupInner">
+                                    <div class="betAmountContent">
+                                      <div class="nonAdvance" [class.hide]="demoAdvance">
+                                        <div class="betAmountWrapper">
+                                          <div class="betAmountTitle">Bet Amount</div>
+                                          <div class="amountNumber">
+                                            <span>{{ demoAmount.toFixed(2) }}</span>
+                                          </div>
+                                        </div>
+                                        <div class="stepsWrapper">
+                                          @for (amount of stepAmounts; track amount) {
+                                            <button
+                                              class="stepButton"
+                                              type="button"
+                                              [attr.data-intro]="'step-' + amount"
+                                              [class.active]="demoAmount === amount"
+                                            >
+                                              <span class="textfit-container"
+                                                ><span
+                                                  class="textfit-text"
+                                                  style="font-size: calc(var(--vp-rem, 1rem) * 0.875)"
+                                                  >{{ amount.toFixed(2) }}</span
+                                                ></span
+                                              >
+                                            </button>
+                                          }
+                                          <button
+                                            class="advanceButton stepButton"
+                                            type="button"
+                                            data-intro="advance"
+                                            [class.active]="demoAdvance"
+                                          >
+                                            <span class="textfit-container"
+                                              ><span
+                                                class="textfit-text"
+                                                style="font-size: calc(var(--vp-rem, 1rem) * 0.875)"
+                                                >Advanced</span
+                                              ></span
+                                            >
+                                          </button>
+                                        </div>
+                                        <div class="inputWrapper">
+                                          <button
+                                            class="minBetButton"
+                                            type="button"
+                                            data-intro="min"
+                                            [disabled]="demoAmount <= 0.1"
+                                          >
+                                            <span class="textfit-container"
+                                              ><span
+                                                class="textfit-text"
+                                                style="font-size: calc(var(--vp-rem, 1rem) * 0.75)"
+                                                >Min</span
+                                              ></span
+                                            >
+                                          </button>
+                                          <div class="amountWrapper">
+                                            <div class="minMaxTextWrapper">
+                                              <div class="minText">
+                                                <span class="textfit-container"
+                                                  ><span
+                                                    class="textfit-text"
+                                                    style="font-size: calc(var(--vp-rem, 1rem) * 0.75)"
+                                                    >0.10</span
+                                                  ></span
+                                                >
+                                              </div>
+                                              <div class="maxText">
+                                                <span class="textfit-container"
+                                                  ><span
+                                                    class="textfit-text"
+                                                    style="font-size: calc(var(--vp-rem, 1rem) * 0.75)"
+                                                    >100.00</span
+                                                  ></span
+                                                >
+                                              </div>
+                                            </div>
+                                            <span
+                                              dir="ltr"
+                                              data-orientation="horizontal"
+                                              class="SliderRoot"
+                                              style="--radix-slider-thumb-transform: translateX(-50%)"
+                                            >
+                                              <span data-orientation="horizontal" class="tracker">
+                                                <span
+                                                  data-orientation="horizontal"
+                                                  class="slider-range"
+                                                  [style.left.%]="0"
+                                                  [style.right.%]="100 - demoSliderPercent"
+                                                ></span>
+                                              </span>
+                                              <span
+                                                style="
+                                                  transform: var(--radix-slider-thumb-transform);
+                                                  position: absolute;
+                                                "
+                                                [style.left.%]="demoSliderPercent"
+                                              >
+                                                <span
+                                                  role="slider"
+                                                  class="thumb"
+                                                  data-orientation="horizontal"
+                                                ></span>
+                                              </span>
+                                            </span>
+                                          </div>
+                                          <button
+                                            class="maxBetButton"
+                                            type="button"
+                                            data-intro="max"
+                                            [disabled]="demoAmount >= 100"
+                                          >
+                                            <span class="textfit-container"
+                                              ><span
+                                                class="textfit-text"
+                                                style="font-size: calc(var(--vp-rem, 1rem) * 0.75)"
+                                                >Max</span
+                                              ></span
+                                            >
+                                          </button>
+                                        </div>
+                                      </div>
+                                      <div class="advance" [class.active]="demoAdvance">
+                                        <div class="advanceWrap">
+                                          <button
+                                            type="button"
+                                            class="simpleModeButton stepButton"
+                                            data-intro="simple"
+                                          >
+                                            <span class="textfit-container"
+                                              ><span
+                                                class="textfit-text"
+                                                style="font-size: calc(var(--vp-rem, 1rem) * 0.875)"
+                                                >Simple Mode</span
+                                              ></span
+                                            >
+                                          </button>
+                                        </div>
+                                      </div>
                                     </div>
-                                    <div class="bet-limits-wrap">
-                                      <div class="bet-limits">
-                                        <div class="bet-limits-title">Minimum bet:</div>
-                                        <div class="bet-limits-value"><span>0.10</span></div>
-                                      </div>
-                                      <div class="bet-limits">
-                                        <div class="bet-limits-title">Maximum bet:</div>
-                                        <div class="bet-limits-value"><span>100.00</span></div>
-                                      </div>
-                                      <div class="bet-limits">
-                                        <div class="bet-limits-title">Max. win for one bet:</div>
-                                        <div class="bet-limits-value"><span>1000.00</span></div>
-                                      </div>
-                                    </div>
+                                    <button
+                                      class="submitBetPopup"
+                                      type="button"
+                                      data-intro="submit"
+                                    >
+                                      Apply
+                                    </button>
                                   </div>
                                 </div>
-                              }
+                              </div>
                             </div>
                           </div>
                         </div>
-                      }
-                    </div>
-
-                    <div class="introPaginationWrapper">
-                      <div class="paginationWrapper">
-                        <button
-                          type="button"
-                          class="nextPrevButton"
-                          [class.disabledNextPrevButton]="currentSlide === 0"
-                          [disabled]="currentSlide === 0"
-                          (click)="goPrev()"
-                        >
-                          <span class="prevNextText"
-                            ><span class="textfit-container"
-                              ><span class="textfit-text" style="font-size: 1rem"
-                                >Previous</span
-                              ></span
-                            ></span
-                          >
-                        </button>
-                        <div class="pageNumberWrapper">
-                          {{ currentSlide + 1 }}/{{ totalSlides }}
-                        </div>
-                        <button type="button" class="nextPrevButton" (click)="goNext()">
-                          <span class="prevNextText"
-                            ><span class="textfit-container"
-                              ><span class="textfit-text" style="font-size: 1rem">{{
-                                currentSlide >= totalSlides - 1 ? 'Start Game' : 'Next'
-                              }}</span></span
-                            ></span
-                          >
-                        </button>
                       </div>
-                    </div>
+                    } @else if (s.showLimits) {
+                      <div class="sc-iwjgNJ bXldcz">
+                        <div class="sc-cxpTYp iCoFvV">
+                          <div class="sc-llYVCM ldLWjr">{{ i + 1 }}</div>
+                          <span class="sc-iJKPnr dyHhvT">{{ s.title }}</span>
+                        </div>
+                        <div class="game-limits">
+                          <div class="game-limits-title">Game Limits</div>
+                          <div class="game-limits-text">
+                            {{ s.description }}
+                          </div>
+                          <div class="bet-limits-wrap">
+                            <div class="bet-limits">
+                              <div class="bet-limits-title">Minimum bet:</div>
+                              <div class="bet-limits-value">
+                                <span>{{ minBetLabel }}</span>
+                              </div>
+                            </div>
+                            <div class="bet-limits">
+                              <div class="bet-limits-title">Maximum bet:</div>
+                              <div class="bet-limits-value">
+                                <span>{{ maxBetLabel }}</span>
+                              </div>
+                            </div>
+                            <div class="bet-limits">
+                              <div class="bet-limits-title">Max. win for one bet:</div>
+                              <div class="bet-limits-value">
+                                <span>{{ maxWinLabel }}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    } @else {
+                      <div class="sc-iwjgNJ bXldcz">
+                        <div class="sc-cxpTYp iCoFvV">
+                          <div class="sc-llYVCM ldLWjr">{{ i + 1 }}</div>
+                          <span class="sc-iJKPnr dyHhvT">{{ s.title }}</span>
+                        </div>
+                        @if (s.description) {
+                          <div class="sc-bkkiih dEQynE">{{ s.description }}</div>
+                        }
+                        @if (s.listItems?.length) {
+                          <ul class="sc-giYhsS kEDMcK">
+                            @for (item of s.listItems; track item) {
+                              <li>{{ item }}</li>
+                            }
+                          </ul>
+                        }
+                        @if (s.image) {
+                          <div class="sc-ezbjtx fWUqgR">
+                            <img [alt]="s.title" [src]="s.image" />
+                          </div>
+                        }
+                      </div>
+                    }
                   </div>
+                }
+              </div>
+              <div class="introPaginationWrapper">
+                <div class="paginationWrapper">
+                  <button
+                    type="button"
+                    class="nextPrevButton"
+                    [class.disabledNextPrevButton]="currentSlide === 0"
+                    [disabled]="currentSlide === 0"
+                    (click)="goPrev()"
+                  >
+                    <span class="prevNextText"
+                      ><span class="textfit-container"
+                        ><span class="textfit-text" style="font-size: 2rem">Previous</span></span
+                      ></span
+                    >
+                  </button>
+                  <div class="pageNumberWrapper">{{ currentSlide + 1 }}/{{ totalSlides }}</div>
+                  <button type="button" class="nextPrevButton" (click)="goNext()">
+                    <span class="prevNextText"
+                      ><span class="textfit-container"
+                        ><span class="textfit-text" style="font-size: 2rem">{{
+                          currentSlide >= totalSlides - 1 ? 'Start Game' : 'Next'
+                        }}</span></span
+                      ></span
+                    >
+                  </button>
                 </div>
               </div>
             </div>
