@@ -1,5 +1,5 @@
 import { Application, Assets, Container } from 'pixi.js';
-import { Spine } from '@esotericsoftware/spine-pixi-v8';
+import { Spine, Physics } from '@esotericsoftware/spine-pixi-v8';
 import type { TrackEntry } from '@esotericsoftware/spine-pixi-v8';
 import {
   GAME_ASSETS,
@@ -19,8 +19,8 @@ const MAIN = {
 
 /**
  * Dual-spine scene matching live Magic Spell / Vimplay:
- * - background spine loops behind (cover-fit to canvas)
- * - wizard sits in front with weighted idle cycle
+ * - background hall cover-fits the stage (floor pinned to bottom)
+ * - wizard scales by height and sits mid-stage
  */
 export class MagicSpellScene {
   private root?: Container;
@@ -28,7 +28,6 @@ export class MagicSpellScene {
   private main?: Spine;
   private destroyed = false;
   private wizardBusy = false;
-  /** When true, idle auto-cycle is paused (debug controller). */
   private manualControl = false;
 
   private readonly onWizardComplete = (entry: TrackEntry): void => {
@@ -73,11 +72,9 @@ export class MagicSpellScene {
     this.main = main;
     main.state.addListener({ complete: this.onWizardComplete });
 
-    // Pose once so getLocalBounds() is valid before first layout
     this.playBackgroundIdle();
     this.startWizardIdleLoop();
 
-    // Layout now + next frame once Pixi has real screen size
     this.layout();
     this.app.ticker.addOnce(() => this.layout());
 
@@ -95,7 +92,17 @@ export class MagicSpellScene {
     const cx = width / 2;
 
     if (this.background) {
-      this.fitCover(this.background, width, height, cx, height / 2, MAGIC_SPELL_SPINE_CONFIG.background.coverPad);
+      const { coverPad, anchorY, fitAttachments, offsetY } = MAGIC_SPELL_SPINE_CONFIG.background;
+      this.fitCover(
+        this.background,
+        width,
+        height,
+        cx,
+        height * anchorY,
+        coverPad,
+        fitAttachments,
+        offsetY,
+      );
     }
 
     if (this.main) {
@@ -124,7 +131,6 @@ export class MagicSpellScene {
     this.background.state.setAnimation(0, name, loop);
   }
 
-  /** Resume automatic idle cycle after manual testing. */
   resumeIdle(): void {
     this.manualControl = false;
     this.wizardBusy = false;
@@ -177,49 +183,82 @@ export class MagicSpellScene {
     root?.destroy({ children: true });
   }
 
-  /** Fill stage like live Magic Spell background. */
+  /** Cover-fit hall and pin bottom edge to stage bottom. */
   private fitCover(
     spine: Spine,
     canvasW: number,
     canvasH: number,
     cx: number,
-    cy: number,
+    anchorY: number,
     pad: number,
+    attachmentNames?: readonly string[],
+    offsetY = 0,
   ): void {
-    const bounds = this.measureBounds(spine);
+    const bounds = this.measureBounds(spine, attachmentNames);
     if (!bounds) {
-      spine.position.set(cx, cy);
+      spine.position.set(cx, canvasH / 2 + offsetY);
       return;
     }
     const scale = Math.max(canvasW / bounds.width, canvasH / bounds.height) * pad;
     spine.scale.set(scale);
     spine.position.set(
       cx - (bounds.x + bounds.width / 2) * scale,
-      cy - (bounds.y + bounds.height / 2) * scale,
+      anchorY - (bounds.y + bounds.height) * scale + offsetY,
     );
   }
 
-  /** Size wizard by height and pin visual center to an anchor point. */
-  private fitByHeight(spine: Spine, targetHeight: number, cx: number, cy: number): void {
+  /** Size wizard by height and center on anchor point. */
+  private fitByHeight(spine: Spine, targetHeight: number, cx: number, anchorY: number): void {
     const bounds = this.measureBounds(spine);
-    if (!bounds || !bounds.height) {
-      spine.position.set(cx, cy);
+    if (!bounds?.height) {
+      spine.position.set(cx, anchorY);
       return;
     }
     const scale = targetHeight / bounds.height;
     spine.scale.set(scale);
     spine.position.set(
       cx - (bounds.x + bounds.width / 2) * scale,
-      cy - (bounds.y + bounds.height / 2) * scale,
+      anchorY - (bounds.y + bounds.height / 2) * scale,
     );
   }
 
-  private measureBounds(spine: Spine): { x: number; y: number; width: number; height: number } | null {
+  private measureBounds(
+    spine: Spine,
+    attachmentNames?: readonly string[],
+  ): { x: number; y: number; width: number; height: number } | null {
     const prevX = spine.scale.x;
     const prevY = spine.scale.y;
     spine.scale.set(1);
-    const bounds = spine.getLocalBounds();
+    spine.skeleton.setupPose();
+    spine.skeleton.updateWorldTransform(Physics.none);
+
+    const named = attachmentNames?.length ? this.measureAttachmentBounds(spine, attachmentNames) : null;
+    const bounds = named ?? spine.getLocalBounds();
     spine.scale.set(prevX, prevY);
+    if (!bounds.width || !bounds.height) return null;
+    return { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height };
+  }
+
+  private measureAttachmentBounds(
+    spine: Spine,
+    names: readonly string[],
+  ): { x: number; y: number; width: number; height: number } | null {
+    const wanted = new Set(names);
+    const slots = spine.skeleton.slots;
+    const saved = slots.map((slot) => slot.pose.getAttachment());
+
+    for (const slot of slots) {
+      const attachment = slot.pose.getAttachment();
+      const keep =
+        !!attachment && (wanted.has(attachment.name) || wanted.has(slot.data.name));
+      if (!keep) slot.pose.setAttachment(null);
+    }
+
+    spine.skeleton.updateWorldTransform(Physics.none);
+    const bounds = spine.getLocalBounds();
+    slots.forEach((slot, i) => slot.pose.setAttachment(saved[i]));
+    spine.skeleton.updateWorldTransform(Physics.none);
+
     if (!bounds.width || !bounds.height) return null;
     return { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height };
   }
@@ -280,10 +319,8 @@ export class MagicSpellScene {
 
   private handleWizardComplete(entry: TrackEntry): void {
     if (!this.main || entry.trackIndex !== 0) return;
-    if (this.manualControl) {
-      // Stay on last frame / don't auto-advance while testing
-      return;
-    }
+    if (this.manualControl) return;
+
     const finished = entry.animation?.name ?? '';
 
     if (this.wizardBusy) {

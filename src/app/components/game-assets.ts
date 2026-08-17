@@ -47,23 +47,29 @@ export const GAME_ASSETS = {
 } as const;
 
 /**
- * Layout tuned to match live Magic Spell stage (1280×720 frame).
- * `defaultPos` from the Vimplay bundle is spine-local and does not map 1:1
- * to Pixi screen coords — we place by bounds instead.
+ * Layout for 1280×720 Vimplay frame.
+ * Live bundle values (scale/defaultPos) target their custom renderer; in Pixi we
+ * map the same visual result with hall cover-fit + wizard height-fit.
  */
 export const MAGIC_SPELL_SPINE_CONFIG = {
   designWidth: 1280,
   designHeight: 720,
   background: {
-    /** Cover the stage with a little overscan so edges never show */
-    coverPad: 1.02,
+    /** Slight overscan so hall edges never clip */
+    coverPad: 1.03,
+    /** Pin hall floor to bottom of stage */
+    anchorY: 1,
+    /** Nudge hall downward (px) */
+    offsetY: 13,
+    /** Measure only the hall — stars/spider skew bounds */
+    fitAttachments: ['Untitled-1 2'],
     idleAnimation: 'Background_animation',
   },
   main: {
-    /** Wizard visual height as fraction of stage height (live ~0.55) */
-    heightRatio: 0.55,
-    /** Visual-center Y as fraction of stage height (0 = top, 1 = bottom) */
-    anchorY: 0.52,
+    /** Wizard height ≈ 58% of stage (slightly wider/taller vs 0.55) */
+    heightRatio: 0.58,
+    /** Visual center Y on stage — slightly above bottom bet panel */
+    anchorY: 0.49,
     idleAnimations: [
       { name: 'Wizard_idle_1', probability: 0.4 },
       { name: 'Wizard_idle_2', probability: 0.2 },

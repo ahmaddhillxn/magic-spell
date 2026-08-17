@@ -7999,21 +7999,23 @@ html[dir='rtl'] {
   position: relative;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+}
+
+.bEDqIM::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
   box-shadow: rgb(0, 0, 0) 0rem 0rem 0.8rem 0.2rem inset;
 }
 
 @media (orientation: portrait) and (max-width: 900px) {
-  .bEDqIM {
-    box-shadow: none;
-  }
   .bEDqIM::after {
-    content: '';
-    position: absolute;
-    top: 0px;
     left: 50%;
     width: 100vh;
     transform: translateX(-50%);
-    height: 100%;
     box-shadow:
       rgb(0, 0, 0) 0px 4rem 1.28rem -4rem inset,
       rgb(0, 0, 0) 0px -4rem 1.28rem -3.52rem inset;
@@ -8887,7 +8889,7 @@ html[dir='rtl'] {
   height: 100%;
   position: relative;
   z-index: 1;
-  background: rgb(0, 0, 0);
+  background: #0b0614;
 }
 
 .gjYwXT {
