@@ -80,5 +80,6 @@ export class App implements OnInit, OnDestroy {
 
     fontSize = Math.min(Math.max(fontSize, 4), maxFontSize);
     document.documentElement.style.fontSize = `${fontSize.toFixed(4)}px`;
+    document.documentElement.classList.toggle('is-portrait', isPortrait);
   }
 }
