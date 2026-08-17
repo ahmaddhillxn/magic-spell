@@ -1,212 +1,222 @@
 <div
-  class="sc-iMWBiG gnAXrm"
+  class="vim--modal"
+  [class.vim--modal--open]="visibility.active()"
   [class.show]="visibility.visible()"
   [class.hide]="!visibility.visible()"
 >
   <div
-    class="sc-bBeLUw iqJovQ"
+    class="vim--modal__backdrop"
     [class.active]="visibility.active()"
     (click)="betSlipToggle.closeBetHistory()"
   ></div>
-  <div class="sc-fvtFIh eoJlOr">
+  <div
+    class="vim--modal__anim-wrap"
+    [class.vim--modal__anim-wrap--open]="visibility.active()"
+  >
     <div
-      class="animation-wrapper fade-to-bottom"
+      class="animation-wrapper fade-blur"
       [class.active]="visibility.active()"
     >
-      <div class="sc-ihgnxC bTsZoq">
-        <div class="sc-jMakVn kZlOrS">
-          <div class="sc-hwdzOS kTAJFM">
-            <div class="sc-jaXxmD gZocBK"><div class="sc-ibQAlc ckeJQj">Bet History</div></div>
-            <button
-              type="button"
-              class="sc-jGKxIN jZLjha"
-              (click)="betSlipToggle.closeBetHistory()"
-              aria-label="Close history"
-            >
-              <span class="sc-iHbSHG huhUrz"
-                ><span class="sc-klVQfr bdatcO"></span><span class="sc-klVQfr bdatcO"></span
-              ></span>
-            </button>
-          </div>
-          <div class="sc-iMTnTM bFJnrU">
-            <div class="sc-krNlrx drIdzz">
-              <div class="sc-guJBde jpeYeH">
-                <div class="bet-history-v2">
-                  <div class="bet-history">
-                    @if (!historyList || historyList.length === 0) {
-                      <div class="empty-view">
-                        <span class="empty-view-icon"
-                          ><svg
-                            width="83"
-                            height="83"
-                            viewBox="0 0 83 83"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              opacity="0.4"
-                              d="M55.8636 6.89967H26.954C14.3966 6.89967 6.91043 14.3858 6.91043 26.9432V55.8184C6.91043 68.4103 14.3966 75.8964 26.954 75.8964H55.8291C68.3865 75.8964 75.8727 68.4103 75.8727 55.8529V26.9432C75.9072 14.3858 68.421 6.89967 55.8636 6.89967Z"
-                              fill="gray"
-                              fill-opacity="0.38"
-                            ></path>
-                            <path
-                              d="M73.4923 42.1915H61.4869C58.106 42.1915 55.1047 44.0544 53.5867 47.0903L50.6889 52.817C49.9989 54.1969 48.619 55.0594 47.101 55.0594H35.7856C34.7161 55.0594 33.1982 54.8179 32.1977 52.817L29.2999 47.1248C27.7819 44.1234 24.7461 42.226 21.3997 42.226H9.32532C7.97988 42.226 6.91043 43.2955 6.91043 44.6409V55.8874C6.91043 68.4103 14.4311 75.8964 26.9885 75.8964H55.8981C67.7311 75.8964 75.0102 69.4107 75.9072 57.8883V44.6064C75.9072 43.2955 74.8377 42.1915 73.4923 42.1915Z"
-                              fill="grey"
-                              fill-opacity="0.38"
-                            ></path>
-                            <path
-                              d="M46.7561 26.9087H36.0616C34.7162 26.9087 33.6467 25.8393 33.6467 24.4938C33.6467 23.1484 34.7162 22.079 36.0616 22.079H46.7561C48.1015 22.079 49.171 23.1484 49.171 24.4938C49.171 25.8393 48.0671 26.9087 46.7561 26.9087Z"
-                              fill="gray"
-                              fill-opacity="0.38"
-                            ></path>
-                            <path
-                              d="M49.446 36.5336H33.3697C32.0243 36.5336 30.9549 35.4641 30.9549 34.1187C30.9549 32.7733 32.0243 31.7038 33.3697 31.7038H49.4115C50.7569 31.7038 51.8264 32.7733 51.8264 34.1187C51.8264 35.4641 50.7569 36.5336 49.446 36.5336Z"
-                              fill="gray"
-                              fill-opacity="0.38"
-                            ></path></svg
-                        ></span>
-                        <div class="empty-view-text">
-                          No activity yet. Place your first bet to get started!
-                        </div>
-                      </div>
-                    } @else {
-                      <div class="title-wrapper main-titles">
-                        <div class="titles">
-                          <div class="date">Date</div>
-                          <div class="bet">Bet</div>
-                          <div class="coefficient">X</div>
-                          <div class="cashout">Win</div>
-                          <div class="arrow-spacer"></div>
-                        </div>
-                      </div>
-                      <div class="wrapper-items">
-                        @for (item of historyList; track $index) {
-                          <div
-                            class="item-wrap"
-                            [class.even]="$index % 2 === 1"
-                            [class.open]="isExpanded($index)"
-                            [class.loss]="isLoss(item)"
-                          >
-                            <div class="bet-history-item">
-                              <button
-                                type="button"
-                                class="history-row"
-                                (click)="toggleExpand($index)"
-                              >
-                                <div class="titles">
-                                  <div class="date">{{ getDateLabel(item) }}</div>
-                                  <div class="bet row-desktop">{{ getBetAmount(item) }}</div>
-                                  <div
-                                    class="coefficient"
-                                    [class.win]="!isLoss(item)"
-                                    [class.lose]="isLoss(item)"
-                                  >
-                                    <div class="coefficient-inner">
-                                      <span class="coeff-desktop">{{ getMultiplier(item) }}</span>
-                                      <span class="coeff-mobile">{{ getMobileBadge(item) }}</span>
-                                    </div>
-                                  </div>
-                                  <div
-                                    class="cashout row-desktop"
-                                    [class.win]="!isLoss(item)"
-                                  >
-                                    {{ getWinAmount(item) }}
-                                  </div>
-                                  <span class="arrow" [class.open]="isExpanded($index)" aria-hidden="true">
-                                    <svg viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                      <path
-                                        d="M1 6.5L6 1.5L11 6.5"
-                                        stroke="currentColor"
-                                        stroke-width="1.6"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                      ></path>
-                                    </svg>
-                                  </span>
-                                </div>
-                              </button>
-
-                              <div class="win-bet-box">
-                                <div class="bet-box">
-                                  <div class="win-bet-icon" aria-hidden="true">
-                                    <svg viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                      <path
-                                        fill="currentColor"
-                                        d="M5.00032 4.26296C7.86196 4.26296 10.0002 3.13766 10.0002 2.13146C10.0002 1.12535 7.86191 0 5.00032 0C2.13874 0 0.000488281 1.12535 0.000488281 2.13146C0.000488281 3.13766 2.13869 4.26296 5.00032 4.26296Z"
-                                      ></path>
-                                      <path
-                                        fill="currentColor"
-                                        d="M4.99983 12.7897C5.41751 12.7897 5.81952 12.7655 6.2019 12.7215C5.87957 12.3094 5.61301 11.8521 5.41332 11.3611C5.27611 11.3657 5.13842 11.3688 4.99979 11.3688C3.36466 11.3688 1.81616 11.0465 0.63966 10.4614C0.408009 10.3461 0.194836 10.2223 0 10.0913V10.6582C0 11.6643 2.1382 12.7897 4.99983 12.7897Z"
-                                      ></path>
-                                      <path
-                                        fill="currentColor"
-                                        d="M4.99988 9.94664C5.01455 9.94664 5.02898 9.9464 5.0436 9.94635C5.01431 9.71346 4.99902 9.47625 4.99902 9.23558C4.99902 8.99501 5.01426 8.75795 5.0436 8.52524C5.02898 8.52524 5.0145 8.52576 4.99988 8.52576C3.36475 8.52576 1.8163 8.20347 0.639755 7.61829C0.408056 7.50307 0.194836 7.37928 0 7.24829V7.81513C4.76256e-05 8.82129 2.13825 9.94664 4.99988 9.94664Z"
-                                      ></path>
-                                      <path
-                                        fill="currentColor"
-                                        d="M4.99988 7.1048C5.14161 7.1048 5.28144 7.10195 5.41951 7.09655C5.64125 6.55539 5.9443 6.05553 6.31378 5.61224C5.886 5.65914 5.44637 5.68401 4.99988 5.68401C3.36475 5.68401 1.8163 5.36172 0.639755 4.77654C0.408056 4.66128 0.194836 4.53753 0 4.40649V4.97339C4.76256e-05 5.97954 2.13825 7.1048 4.99988 7.1048Z"
-                                      ></path>
-                                      <path
-                                        fill="currentColor"
-                                        d="M7.14244 6.88107C6.83335 7.34331 6.61251 7.86865 6.50388 8.43318C6.45373 8.69341 6.42725 8.96188 6.42725 9.23642C6.42725 9.44284 6.44239 9.64579 6.47101 9.84444C6.54136 10.3324 6.69505 10.7939 6.91727 11.2142C7.15044 11.6554 7.45891 12.0512 7.82577 12.3845C8.58816 13.0771 9.60211 13.5002 10.7136 13.5002C13.077 13.5002 14.9999 11.5875 14.9999 9.23642C14.9999 6.88534 13.077 4.97266 10.7136 4.97266C10.4693 4.97266 10.2298 4.99341 9.9965 5.03263C8.80834 5.23251 7.78496 5.92035 7.14244 6.88107Z"
-                                      ></path>
-                                    </svg>
-                                  </div>
-                                  <div class="win-bet-values">
-                                    <span class="win-bet-label">Bet</span>
-                                    <span class="bet-value">{{ getBetAmount(item) }}</span>
-                                  </div>
-                                </div>
-                                @if (!isLoss(item)) {
-                                  <div class="win-box">
-                                    <div class="win-bet-icon" aria-hidden="true">
-                                      <svg viewBox="0 0 13 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                          fill="currentColor"
-                                          d="M3.87448 3.41552H8.23447L9.61535 0.866219C9.65977 0.784203 9.67695 0.69018 9.66439 0.597756C9.65183 0.505332 9.61019 0.4193 9.5455 0.352111C9.4808 0.284922 9.3964 0.240061 9.30452 0.224019C9.21263 0.207978 9.11803 0.221587 9.03439 0.262879C8.04621 0.750789 7.18207 0.542576 6.18149 0.30161C5.19202 0.0632796 4.07068 -0.206838 2.7394 0.240321C2.67865 0.260733 2.62309 0.294189 2.57662 0.338343C2.53016 0.382497 2.49392 0.43628 2.47044 0.495922C2.44696 0.555563 2.43682 0.619618 2.44071 0.683596C2.44461 0.747573 2.46245 0.809925 2.49299 0.866278L3.87448 3.41552ZM8.6942 4.4729C8.63705 4.41374 8.57954 4.35417 8.52167 4.29419H3.58731C3.52952 4.35409 3.47201 4.41366 3.41478 4.4729C2.52384 5.3947 1.68226 6.26543 1.0558 7.24008C0.335508 8.36083 0 9.45946 0 10.6977C0 12.1344 0.774639 13.2313 2.2401 13.8698C3.49351 14.4158 5.00602 14.5304 6.05414 14.5304C7.10991 14.5304 8.6308 14.4157 9.88058 13.8695C11.3385 13.2323 12.1091 12.1356 12.1091 10.6977C12.1091 9.45949 11.7736 8.3608 11.0533 7.24008C10.4268 6.26543 9.58526 5.3947 8.6942 4.4729ZM6.14449 8.54326C6.45923 8.60947 6.78466 8.67803 7.0638 8.86198C7.42649 9.10107 7.61042 9.47059 7.61042 9.96029C7.61042 10.6068 7.1383 11.1538 6.49348 11.328V11.5547C6.49348 11.6713 6.44718 11.7831 6.36476 11.8655C6.28235 11.9479 6.17057 11.9942 6.05402 11.9942C5.93747 11.9942 5.8257 11.9479 5.74328 11.8655C5.66087 11.7831 5.61457 11.6713 5.61457 11.5547V11.328C4.96975 11.1538 4.49763 10.6068 4.49763 9.96029C4.49763 9.84374 4.54393 9.73197 4.62634 9.64955C4.70875 9.56714 4.82053 9.52084 4.93708 9.52084C5.05363 9.52084 5.16541 9.56714 5.24782 9.64955C5.33023 9.73197 5.37653 9.84374 5.37653 9.96029C5.37653 10.262 5.68046 10.5074 6.05402 10.5074C6.42759 10.5074 6.73151 10.262 6.73151 9.96029C6.73151 9.62045 6.62385 9.54226 5.96353 9.40333C5.64882 9.33712 5.32336 9.26856 5.04425 9.08464C4.68152 8.84552 4.49763 8.476 4.49763 7.9863C4.49763 7.33942 4.96975 6.79207 5.61457 6.61775V6.39184C5.61457 6.27529 5.66087 6.16352 5.74328 6.0811C5.8257 5.99869 5.93747 5.95239 6.05402 5.95239C6.17057 5.95239 6.28235 5.99869 6.36476 6.0811C6.44718 6.16352 6.49348 6.27529 6.49348 6.39184V6.61766C7.1383 6.79198 7.61042 7.33933 7.61042 7.98621C7.61042 8.10276 7.56412 8.21454 7.48171 8.29695C7.39929 8.37936 7.28752 8.42566 7.17097 8.42566C7.05442 8.42566 6.94264 8.37936 6.86023 8.29695C6.77781 8.21454 6.73151 8.10276 6.73151 7.98621C6.73151 7.68407 6.42759 7.43836 6.05402 7.43836C5.68046 7.43836 5.37653 7.68416 5.37653 7.98621C5.37665 8.32623 5.48432 8.40431 6.14461 8.54326H6.14449Z"
-                                        ></path>
-                                      </svg>
-                                    </div>
-                                    <div class="win-bet-values">
-                                      <span class="win-bet-label">Win</span>
-                                      <span class="win-value">{{ getWinAmount(item) }}</span>
-                                    </div>
-                                  </div>
-                                }
-                                <button
-                                  type="button"
-                                  class="show-detail-button"
-                                  [class.open]="isExpanded($index)"
-                                  (click)="toggleExpand($index); $event.stopPropagation()"
-                                >
-                                  Show Detail
-                                </button>
-                              </div>
-
-                              <div class="bet-detail" [class.show]="isExpanded($index)">
-                                <div class="bet-detail-inner">
-                                  <div class="detail-col">
-                                    <div class="detail-label">ID</div>
-                                    <div class="detail-value">{{ getBetId(item) }}</div>
-                                  </div>
-                                  <div class="detail-col">
-                                    <div class="detail-label">Payout</div>
-                                    <div class="detail-value">{{ getPayout(item) }}</div>
-                                  </div>
-                                  <div class="detail-col">
-                                    <div class="detail-label">Result</div>
-                                    <div class="detail-value">{{ getResult(item) }}</div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        }
-                      </div>
-                    }
+      <div
+        class="vim--modal__inner vim--modal__inner--open"
+        style="
+          --modal-width: 44.8rem;
+          --modal-height: 59.2rem;
+          --modal-mobile-width: 28.8rem;
+          --modal-mobile-height: 46.4rem;
+        "
+      >
+        <div class="vim--modal__heading-wrapper">
+          <div class="vim--modal__heading"><div class="vim--modal__title">Bet History</div></div>
+          <button
+            type="button"
+            class="vim--modal__close-btn"
+            (click)="betSlipToggle.closeBetHistory()"
+            aria-label="Close history"
+          >
+            <span class="vim--modal__close-icon-wrapper"
+              ><svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M14.3607 10L19.935 4.42574C20.0217 4.33906 20.0217 4.19237 19.935 4.10568L15.8943 0.0650108C15.8076 -0.0216703 15.6609 -0.0216703 15.5743 0.0650108L10 5.63927L4.42574 0.0650108C4.33906 -0.0216703 4.19237 -0.0216703 4.10568 0.0650108L0.0650108 4.10568C-0.0216703 4.19237 -0.0216703 4.33906 0.0650108 4.42574L5.63927 10L0.0650108 15.5743C-0.0216703 15.6609 -0.0216703 15.8076 0.0650108 15.8943L4.10568 19.935C4.19237 20.0217 4.33906 20.0217 4.42574 19.935L10 14.3607L15.5743 19.935C15.6609 20.0217 15.8076 20.0217 15.8943 19.935L19.935 15.8943C20.0217 15.8076 20.0217 15.6609 19.935 15.5743L14.3607 10Z"
+                  fill="white"
+                ></path></svg
+            ></span>
+          </button>
+        </div>
+        <div class="vim--modal__body">
+          <div class="sc-iqshrI hvRfuF">
+            <div class="bet-history">
+              @if (!historyList || historyList.length === 0) {
+                <div class="empty-view">
+                  <span class="empty-view-icon"
+                    ><svg
+                      width="83"
+                      height="83"
+                      viewBox="0 0 83 83"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        opacity="0.4"
+                        d="M55.8636 6.89967H26.954C14.3966 6.89967 6.91043 14.3858 6.91043 26.9432V55.8184C6.91043 68.4103 14.3966 75.8964 26.954 75.8964H55.8291C68.3865 75.8964 75.8727 68.4103 75.8727 55.8529V26.9432C75.9072 14.3858 68.421 6.89967 55.8636 6.89967Z"
+                        fill="gray"
+                        fill-opacity="0.38"
+                      ></path>
+                      <path
+                        d="M73.4923 42.1915H61.4869C58.106 42.1915 55.1047 44.0544 53.5867 47.0903L50.6889 52.817C49.9989 54.1969 48.619 55.0594 47.101 55.0594H35.7856C34.7161 55.0594 33.1982 54.8179 32.1977 52.817L29.2999 47.1248C27.7819 44.1234 24.7461 42.226 21.3997 42.226H9.32532C7.97988 42.226 6.91043 43.2955 6.91043 44.6409V55.8874C6.91043 68.4103 14.4311 75.8964 26.9885 75.8964H55.8981C67.7311 75.8964 75.0102 69.4107 75.9072 57.8883V44.6064C75.9072 43.2955 74.8377 42.1915 73.4923 42.1915Z"
+                        fill="grey"
+                        fill-opacity="0.38"
+                      ></path>
+                      <path
+                        d="M46.7561 26.9087H36.0616C34.7162 26.9087 33.6467 25.8393 33.6467 24.4938C33.6467 23.1484 34.7162 22.079 36.0616 22.079H46.7561C48.1015 22.079 49.171 23.1484 49.171 24.4938C49.171 25.8393 48.0671 26.9087 46.7561 26.9087Z"
+                        fill="gray"
+                        fill-opacity="0.38"
+                      ></path>
+                      <path
+                        d="M49.446 36.5336H33.3697C32.0243 36.5336 30.9549 35.4641 30.9549 34.1187C30.9549 32.7733 32.0243 31.7038 33.3697 31.7038H49.4115C50.7569 31.7038 51.8264 32.7733 51.8264 34.1187C51.8264 35.4641 50.7569 36.5336 49.446 36.5336Z"
+                        fill="gray"
+                        fill-opacity="0.38"
+                      ></path></svg
+                  ></span>
+                  <div class="empty-view-text">
+                    No activity yet. Place your first bet to get started!
                   </div>
                 </div>
-              </div>
+              } @else {
+                <div class="title-wrapper main-titles">
+                  <div class="titles">
+                    <div class="date">Date</div>
+                    <div class="bet">Bet</div>
+                    <div class="coefficient">X</div>
+                    <div class="cashout">Win</div>
+                    <div class="arrow-spacer"></div>
+                  </div>
+                </div>
+                <div class="wrapper-items">
+                  @for (item of historyList; track $index) {
+                    <div
+                      class="item-wrap"
+                      [class.even]="$index % 2 === 1"
+                      [class.open]="isExpanded($index)"
+                      [class.loss]="isLoss(item)"
+                    >
+                      <div class="bet-history-item">
+                        <button
+                          type="button"
+                          class="history-row"
+                          (click)="toggleExpand($index)"
+                        >
+                          <div class="titles">
+                            <div class="date">{{ getDateLabel(item) }}</div>
+                            <div class="bet row-desktop">{{ getBetAmount(item) }}</div>
+                            <div
+                              class="coefficient"
+                              [class.win]="!isLoss(item)"
+                              [class.lose]="isLoss(item)"
+                            >
+                              <div class="coefficient-inner">
+                                <span class="coeff-desktop">{{ getMultiplier(item) }}</span>
+                                <span class="coeff-mobile">{{ getMobileBadge(item) }}</span>
+                              </div>
+                            </div>
+                            <div
+                              class="cashout row-desktop"
+                              [class.win]="!isLoss(item)"
+                            >
+                              {{ getWinAmount(item) }}
+                            </div>
+                            <span class="arrow" [class.open]="isExpanded($index)" aria-hidden="true">
+                              <svg viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                  d="M1 6.5L6 1.5L11 6.5"
+                                  stroke="currentColor"
+                                  stroke-width="1.6"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                ></path>
+                              </svg>
+                            </span>
+                          </div>
+                        </button>
+
+                        <div class="win-bet-box">
+                          <div class="bet-box">
+                            <div class="win-bet-icon" aria-hidden="true">
+                              <svg viewBox="0 0 15 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                  fill="currentColor"
+                                  d="M5.00032 4.26296C7.86196 4.26296 10.0002 3.13766 10.0002 2.13146C10.0002 1.12535 7.86191 0 5.00032 0C2.13874 0 0.000488281 1.12535 0.000488281 2.13146C0.000488281 3.13766 2.13869 4.26296 5.00032 4.26296Z"
+                                ></path>
+                                <path
+                                  fill="currentColor"
+                                  d="M4.99983 12.7897C5.41751 12.7897 5.81952 12.7655 6.2019 12.7215C5.87957 12.3094 5.61301 11.8521 5.41332 11.3611C5.27611 11.3657 5.13842 11.3688 4.99979 11.3688C3.36466 11.3688 1.81616 11.0465 0.63966 10.4614C0.408009 10.3461 0.194836 10.2223 0 10.0913V10.6582C0 11.6643 2.1382 12.7897 4.99983 12.7897Z"
+                                ></path>
+                                <path
+                                  fill="currentColor"
+                                  d="M4.99988 9.94664C5.01455 9.94664 5.02898 9.9464 5.0436 9.94635C5.01431 9.71346 4.99902 9.47625 4.99902 9.23558C4.99902 8.99501 5.01426 8.75795 5.0436 8.52524C5.02898 8.52524 5.0145 8.52576 4.99988 8.52576C3.36475 8.52576 1.8163 8.20347 0.639755 7.61829C0.408056 7.50307 0.194836 7.37928 0 7.24829V7.81513C4.76256e-05 8.82129 2.13825 9.94664 4.99988 9.94664Z"
+                                ></path>
+                                <path
+                                  fill="currentColor"
+                                  d="M4.99988 7.1048C5.14161 7.1048 5.28144 7.10195 5.41951 7.09655C5.64125 6.55539 5.9443 6.05553 6.31378 5.61224C5.886 5.65914 5.44637 5.68401 4.99988 5.68401C3.36475 5.68401 1.8163 5.36172 0.639755 4.77654C0.408056 4.66128 0.194836 4.53753 0 4.40649V4.97339C4.76256e-05 5.97954 2.13825 7.1048 4.99988 7.1048Z"
+                                ></path>
+                                <path
+                                  fill="currentColor"
+                                  d="M7.14244 6.88107C6.83335 7.34331 6.61251 7.86865 6.50388 8.43318C6.45373 8.69341 6.42725 8.96188 6.42725 9.23642C6.42725 9.44284 6.44239 9.64579 6.47101 9.84444C6.54136 10.3324 6.69505 10.7939 6.91727 11.2142C7.15044 11.6554 7.45891 12.0512 7.82577 12.3845C8.58816 13.0771 9.60211 13.5002 10.7136 13.5002C13.077 13.5002 14.9999 11.5875 14.9999 9.23642C14.9999 6.88534 13.077 4.97266 10.7136 4.97266C10.4693 4.97266 10.2298 4.99341 9.9965 5.03263C8.80834 5.23251 7.78496 5.92035 7.14244 6.88107Z"
+                                ></path>
+                              </svg>
+                            </div>
+                            <div class="win-bet-values">
+                              <span class="win-bet-label">Bet</span>
+                              <span class="bet-value">{{ getBetAmount(item) }}</span>
+                            </div>
+                          </div>
+                          @if (!isLoss(item)) {
+                            <div class="win-box">
+                              <div class="win-bet-icon" aria-hidden="true">
+                                <svg viewBox="0 0 13 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <path
+                                    fill="currentColor"
+                                    d="M3.87448 3.41552H8.23447L9.61535 0.866219C9.65977 0.784203 9.67695 0.69018 9.66439 0.597756C9.65183 0.505332 9.61019 0.4193 9.5455 0.352111C9.4808 0.284922 9.3964 0.240061 9.30452 0.224019C9.21263 0.207978 9.11803 0.221587 9.03439 0.262879C8.04621 0.750789 7.18207 0.542576 6.18149 0.30161C5.19202 0.0632796 4.07068 -0.206838 2.7394 0.240321C2.67865 0.260733 2.62309 0.294189 2.57662 0.338343C2.53016 0.382497 2.49392 0.43628 2.47044 0.495922C2.44696 0.555563 2.43682 0.619618 2.44071 0.683596C2.44461 0.747573 2.46245 0.809925 2.49299 0.866278L3.87448 3.41552ZM8.6942 4.4729C8.63705 4.41374 8.57954 4.35417 8.52167 4.29419H3.58731C3.52952 4.35409 3.47201 4.41366 3.41478 4.4729C2.52384 5.3947 1.68226 6.26543 1.0558 7.24008C0.335508 8.36083 0 9.45946 0 10.6977C0 12.1344 0.774639 13.2313 2.2401 13.8698C3.49351 14.4158 5.00602 14.5304 6.05414 14.5304C7.10991 14.5304 8.6308 14.4157 9.88058 13.8695C11.3385 13.2323 12.1091 12.1356 12.1091 10.6977C12.1091 9.45949 11.7736 8.3608 11.0533 7.24008C10.4268 6.26543 9.58526 5.3947 8.6942 4.4729ZM6.14449 8.54326C6.45923 8.60947 6.78466 8.67803 7.0638 8.86198C7.42649 9.10107 7.61042 9.47059 7.61042 9.96029C7.61042 10.6068 7.1383 11.1538 6.49348 11.328V11.5547C6.49348 11.6713 6.44718 11.7831 6.36476 11.8655C6.28235 11.9479 6.17057 11.9942 6.05402 11.9942C5.93747 11.9942 5.8257 11.9479 5.74328 11.8655C5.66087 11.7831 5.61457 11.6713 5.61457 11.5547V11.328C4.96975 11.1538 4.49763 10.6068 4.49763 9.96029C4.49763 9.84374 4.54393 9.73197 4.62634 9.64955C4.70875 9.56714 4.82053 9.52084 4.93708 9.52084C5.05363 9.52084 5.16541 9.56714 5.24782 9.64955C5.33023 9.73197 5.37653 9.84374 5.37653 9.96029C5.37653 10.262 5.68046 10.5074 6.05402 10.5074C6.42759 10.5074 6.73151 10.262 6.73151 9.96029C6.73151 9.62045 6.62385 9.54226 5.96353 9.40333C5.64882 9.33712 5.32336 9.26856 5.04425 9.08464C4.68152 8.84552 4.49763 8.476 4.49763 7.9863C4.49763 7.33942 4.96975 6.79207 5.61457 6.61775V6.39184C5.61457 6.27529 5.66087 6.16352 5.74328 6.0811C5.8257 5.99869 5.93747 5.95239 6.05402 5.95239C6.17057 5.95239 6.28235 5.99869 6.36476 6.0811C6.44718 6.16352 6.49348 6.27529 6.49348 6.39184V6.61766C7.1383 6.79198 7.61042 7.33933 7.61042 7.98621C7.61042 8.10276 7.56412 8.21454 7.48171 8.29695C7.39929 8.37936 7.28752 8.42566 7.17097 8.42566C7.05442 8.42566 6.94264 8.37936 6.86023 8.29695C6.77781 8.21454 6.73151 8.10276 6.73151 7.98621C6.73151 7.68407 6.42759 7.43836 6.05402 7.43836C5.68046 7.43836 5.37653 7.68416 5.37653 7.98621C5.37665 8.32623 5.48432 8.40431 6.14461 8.54326H6.14449Z"
+                                  ></path>
+                                </svg>
+                              </div>
+                              <div class="win-bet-values">
+                                <span class="win-bet-label">Win</span>
+                                <span class="win-value">{{ getWinAmount(item) }}</span>
+                              </div>
+                            </div>
+                          }
+                          <button
+                            type="button"
+                            class="show-detail-button"
+                            [class.open]="isExpanded($index)"
+                            (click)="toggleExpand($index); $event.stopPropagation()"
+                          >
+                            Show Detail
+                          </button>
+                        </div>
+
+                        <div class="bet-detail" [class.show]="isExpanded($index)">
+                          <div class="bet-detail-inner">
+                            <div class="detail-col">
+                              <div class="detail-label">ID</div>
+                              <div class="detail-value">{{ getBetId(item) }}</div>
+                            </div>
+                            <div class="detail-col">
+                              <div class="detail-label">Payout</div>
+                              <div class="detail-value">{{ getPayout(item) }}</div>
+                            </div>
+                            <div class="detail-col">
+                              <div class="detail-label">Result</div>
+                              <div class="detail-value">{{ getResult(item) }}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
             </div>
           </div>
         </div>

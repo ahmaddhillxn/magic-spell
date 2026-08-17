@@ -1334,7 +1334,7 @@ picture {
 }
 
 .thumb {
-  background: rgb(255, 255, 0);
+  background: var(--popup-thumb-bg, rgb(255, 149, 0));
   height: calc(var(--vp-rem, 1rem) * 1.125);
   width: calc(var(--vp-rem, 1rem) * 1.125);
   border-radius: calc(var(--vp-rem, 1rem) * 12);
@@ -1663,7 +1663,7 @@ picture {
 
 .SliderRoot .thumb {
   display: block;
-  background: rgb(255, 255, 0);
+  background: var(--popup-thumb-bg, rgb(255, 149, 0));
   height: calc(var(--vp-rem, 1rem) * 1.125);
   width: calc(var(--vp-rem, 1rem) * 1.125);
   border-radius: calc(var(--vp-rem, 1rem) * 12);
@@ -4859,7 +4859,7 @@ html[dir='rtl'] {
 }
 
 .etjbVm .popupWrapper .thumb {
-  background: var(--cg-secondary-color);
+  background: var(--popup-thumb-bg, rgb(255, 149, 0));
 }
 
 .etjbVm .popupWrapper .tracker {
@@ -6224,7 +6224,7 @@ html[dir='rtl'] {
 
 .etjbVm .popupWrapper .thumb,
 .thumb {
-  background: rgb(255, 255, 0) !important;
+  background: var(--popup-thumb-bg, rgb(255, 149, 0)) !important;
 }
 
 .etjbVm .popupWrapper .tracker,
