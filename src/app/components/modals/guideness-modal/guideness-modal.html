@@ -1,7 +1,10 @@
 <div class="vim--modal vim--modal--open">
-  <div class="vim--modal__backdrop"></div>
+  <div
+    class="vim--modal__backdrop"
+    (click)="$event.stopPropagation(); close()"
+  ></div>
   <div class="vim--modal__anim-wrap vim--modal__anim-wrap--open">
-    <div class="animation-wrapper fade-blur active">
+    <div class="animation-wrapper">
       <div
         class="vim--modal__inner vim--modal__inner--open"
         style="
@@ -13,7 +16,12 @@
       >
         <div class="vim--modal__heading-wrapper">
           <div class="vim--modal__heading"><div class="vim--modal__title">Game Guide</div></div>
-          <button type="button" class="vim--modal__close-btn">
+          <button
+            type="button"
+            class="vim--modal__close-btn"
+            (click)="close()"
+            aria-label="Close guide"
+          >
             <span class="vim--modal__close-icon-wrapper"
               ><svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -27,321 +35,272 @@
           <div class="intro">
             <div class="introContentWrapper">
               <div class="introContent">
-                <div class="introChild active">
-                  <div class="sc-crHjuH mLvrK">
-                    <div class="sc-eggEi fDyFZh">
-                      Welcome to Magic Spell! Cast a magic spell to get a random multiplier. If the
-                      multiplier is equal to or higher than your payout, you win! But if the magic
-                      fails, you lose and the round ends.
-                    </div>
-                    <div class="sc-hBUSFb cvGQuT">
-                      <div class="sc-fotPOC cxyIyL">1</div>
-                      <span class="sc-fFejRA ivZjMr">The Game Board</span>
-                    </div>
-                    <div class="sc-bkkiih dEQynE">
-                      Watch the wizard do magic and see your multiplier. On the top side, you can
-                      see the results of past rounds to help you choose your next bet.
-                    </div>
-                    <div class="sc-bqiQet sc-ksdwMQ cgkSSi ephrFd">
-                      <img
-                        alt="game board"
-                        src="blob:https://magic-spell.vcp0kuq2noxtbfautplyud.com/37e88adc-7051-42f6-9fde-bc191521002a"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div class="introChild after-active">
-                  <div class="sc-iwjgNJ bXldcz">
-                    <div class="sc-cxpTYp iCoFvV">
-                      <div class="sc-llYVCM ldLWjr">2</div>
-                      <span class="sc-iJKPnr dyHhvT">Making Moves</span>
-                    </div>
-                    <ul class="sc-giYhsS kEDMcK">
-                      <li>Set your bet amount using +/- buttons or pick from the bet selector.</li>
-                      <li>Set your payout to choose how much you want to win.</li>
-                      <li>
-                        Choose your bet and payout, then click the bet button to start the magic
-                        spell.
-                      </li>
-                      <li>
-                        If the magic fails, you lose your bet. If it works, coins will appear in the
-                        magic circle and you win!
-                      </li>
-                    </ul>
-                    <div class="sc-ezbjtx sc-bYoByY fWUqgR beHBjf">
-                      <img
-                        alt="making move"
-                        src="blob:https://magic-spell.vcp0kuq2noxtbfautplyud.com/24845323-876d-4f56-aabd-927a72e7e7e0"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div class="introChild active">
-                  <div class="sc-hiCkJs kSHCGx">
-                    <div class="sc-gWWYmq egLkft">
-                      <div class="sc-cCcWCX llWpQt">3</div>
-                      <span class="sc-cidBVM hQgcqY">Bet Selector</span>
-                    </div>
-                    <div class="sc-jcFjLp krkysW">
-                      Choose your bet using the Bet Selector in the betting area, select a preset
-                      amount, then press Apply to confirm your choice.
-                    </div>
-                    <div class="sc-caiKUm hpUUsW">
-                      <div class="sc-iUKsJP cscecH">
-                        <img
-                          alt="betSelector"
-                          class="sc-iAKYcE jOjzQs"
-                          src="blob:https://magic-spell.vcp0kuq2noxtbfautplyud.com/9b962cd0-f644-423f-9698-47c282835878"
-                        />
+                @for (s of slides; track s.title; let i = $index) {
+                  <div
+                    class="introChild"
+                    [class.active]="isSlideActive(i)"
+                    [class.before-active]="isSlideBefore(i)"
+                    [class.after-active]="isSlideAfter(i)"
+                  >
+                    @if (s.welcome) {
+                      <div class="sc-crHjuH mLvrK">
+                        @if (s.description) {
+                          <div class="sc-eggEi fDyFZh">{{ s.description }}</div>
+                        }
+                        <div class="sc-hBUSFb cvGQuT">
+                          <div class="sc-fotPOC cxyIyL">{{ i + 1 }}</div>
+                          <span class="sc-fFejRA ivZjMr">{{ s.title }}</span>
+                        </div>
+                        @if (s.body) {
+                          <div class="sc-bkkiih dEQynE">{{ s.body }}</div>
+                        }
+                        @if (s.image) {
+                          <div class="sc-bqiQet cgkSSi">
+                            <img [alt]="s.title" [src]="s.image" />
+                          </div>
+                        }
                       </div>
-                    </div>
-                    <div class="sc-efQWtl IfjdB">
-                      <div class="sc-jJoSDR boTFNt">
-                        <div class="bet-amount-popup-intro">
-                          <div class="popupMain">
-                            <div class="popupContainer">
-                              <div class="popupWrapper">
+                    } @else if (s.betSelector) {
+                      <div class="sc-iwjgNJ bXldcz">
+                        <div class="sc-cxpTYp iCoFvV">
+                          <div class="sc-llYVCM ldLWjr">{{ i + 1 }}</div>
+                          <span class="sc-iJKPnr dyHhvT">{{ s.title }}</span>
+                        </div>
+                        @if (s.description) {
+                          <div class="sc-bkkiih dEQynE">{{ s.description }}</div>
+                        }
+                        <div class="guide-bet-preview">
+                          <div class="guide-bet-preview__icon-wrap">
+                            <img [src]="coinIcon" alt="" />
+                          </div>
+                          <div class="guide-bet-amount-shell" #guideBetShell>
+                            <div class="popupMain">
+                              <div class="popupContainer" #introPopupContainer>
                                 <div
                                   class="intro-cursor"
-                                  style="left: 11.2167rem; top: 6.75601rem; opacity: 1"
+                                  [class.clickAnimation]="cursorClicking"
+                                  [style.left.px]="cursorLeftPx"
+                                  [style.top.px]="cursorTopPx"
+                                  [style.opacity]="cursorOpacity"
                                 >
                                   <svg
-                                    id="Layer_1"
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 512 512"
+                                    aria-hidden="true"
                                   >
-                                    <g id="Layer_2">
-                                      <g id="cursor">
-                                        <g>
-                                          <path
-                                            d="M278.33,506.06c-7.25,0-13.82-4.27-16.75-10.89l-60.24-137.24-6.2,5.94c-12,11.5-24,22.97-36,34.45-12,11.48-24,22.95-36,34.45-4.39,4.19-9.18,5.08-12.41,5.08-4.69,0-9.36-1.85-12.8-5.07-2.57-2.41-5.64-6.66-5.64-13.28V24.3c0-11.43,9.35-18.26,18.39-18.26,4.54,0,8.78,1.69,12.26,4.88l290.99,267.49c6.52,6.03,6.78,14.04,4.83,19.53-1.94,5.5-7.19,11.58-16.07,12.16l-108.43,6.84,3.43,7.85c19.43,44.49,38.74,88.54,56.7,129.51,1.97,4.49,2.07,9.46.28,14.01-1.78,4.51-5.21,8.05-9.66,9.97l-59.35,26.22c-2.33,1.02-4.81,1.55-7.34,1.55Z"
-                                            fill="#fff"
-                                          ></path>
-                                          <path
-                                            d="M110.69,12.04h0c3.05,0,5.81,1.11,8.19,3.29l290.98,267.48c5.53,5.11,3.89,11.34,3.26,13.13-.63,1.79-3.29,7.68-10.77,8.18l-99.9,6.3-17.1,1.08,6.86,15.7c19.42,44.47,38.73,88.53,56.71,129.52,1.32,3.01,1.39,6.35.19,9.39-1.19,3.01-3.48,5.38-6.46,6.66l-.05.02-.05.02-59.27,26.19c-1.58.69-3.24,1.05-4.94,1.05-4.87,0-9.3-2.87-11.25-7.28l-56.8-129.4-6.9-15.72-12.39,11.88c-12,11.5-23.99,22.97-35.99,34.44-12,11.48-24.01,22.96-35.99,34.44-2.96,2.83-6.14,3.42-8.28,3.42-6.11,0-12.44-4.62-12.44-12.34V24.3c0-7.67,6.3-12.26,12.39-12.26M110.69.04c-12.5,0-24.38,9.74-24.38,24.26v395.2c0,14.62,11.95,24.34,24.44,24.34,5.79,0,11.69-2.09,16.56-6.74,24-23,48-45.9,72-68.9l56.8,129.4c4,9.04,12.89,14.46,22.24,14.46,3.26,0,6.58-.66,9.76-2.06l59.3-26.2c12.3-5.3,17.9-19.6,12.5-31.9-18.9-43.1-37.7-86-56.7-129.5l99.9-6.3c21.3-1.4,30.6-27.6,14.9-42.1L127,6.5C122.14,2.04,116.35.04,110.69.04h0Z"
-                                            fill="#000"
-                                          ></path>
-                                        </g>
-                                      </g>
-                                    </g>
+                                    <path
+                                      d="M278.33,506.06c-7.25,0-13.82-4.27-16.75-10.89l-60.24-137.24-6.2,5.94c-12,11.5-24,22.97-36,34.45-12,11.48-24,22.95-36,34.45-4.39,4.19-9.18,5.08-12.41,5.08-4.69,0-9.36-1.85-12.8-5.07-2.57-2.41-5.64-6.66-5.64-13.28V24.3c0-11.43,9.35-18.26,18.39-18.26,4.54,0,8.78,1.69,12.26,4.88l290.99,267.49c6.52,6.03,6.78,14.04,4.83,19.53-1.94,5.5-7.19,11.58-16.07,12.16l-108.43,6.84,3.43,7.85c19.43,44.49,38.74,88.54,56.7,129.51,1.97,4.49,2.07,9.46.28,14.01-1.78,4.51-5.21,8.05-9.66,9.97l-59.35,26.22c-2.33,1.02-4.81,1.55-7.34,1.55Z"
+                                      fill="#fff"
+                                    />
                                   </svg>
                                 </div>
-                                <div class="popupInner">
-                                  <div class="betAmountContent">
-                                    <div class="nonAdvance">
-                                      <div class="betAmountWrapper">
-                                        <div class="betAmountTitle">Bet Amount</div>
-                                        <div class="amountNumber">
-                                          <span> </span><span>0.10</span>
-                                        </div>
-                                      </div>
-                                      <div class="stepsWrapper">
-                                        <button class="stepButton">
-                                          <span class="textfit-container"
-                                            ><span
-                                              class="textfit-text"
-                                              style="font-size: calc(var(--vp-rem, 1rem) * 0.875)"
-                                              >0.70</span
-                                            ></span
-                                          ></button
-                                        ><button class="stepButton">
-                                          <span class="textfit-container"
-                                            ><span
-                                              class="textfit-text"
-                                              style="font-size: calc(var(--vp-rem, 1rem) * 0.875)"
-                                              >1.75</span
-                                            ></span
-                                          ></button
-                                        ><button class="stepButton">
-                                          <span class="textfit-container"
-                                            ><span
-                                              class="textfit-text"
-                                              style="font-size: calc(var(--vp-rem, 1rem) * 0.875)"
-                                              >6.00</span
-                                            ></span
-                                          ></button
-                                        ><button class="stepButton">
-                                          <span class="textfit-container"
-                                            ><span
-                                              class="textfit-text"
-                                              style="font-size: calc(var(--vp-rem, 1rem) * 0.875)"
-                                              >12.50</span
-                                            ></span
-                                          ></button
-                                        ><button class="stepButton">
-                                          <span class="textfit-container"
-                                            ><span
-                                              class="textfit-text"
-                                              style="font-size: calc(var(--vp-rem, 1rem) * 0.875)"
-                                              >40.00</span
-                                            ></span
-                                          ></button
-                                        ><button class="advanceButton stepButton">
-                                          <span class="textfit-container"
-                                            ><span
-                                              class="textfit-text"
-                                              style="font-size: calc(var(--vp-rem, 1rem) * 0.875)"
-                                              >Advanced</span
-                                            ></span
-                                          >
-                                        </button>
-                                      </div>
-                                      <div class="inputWrapper">
-                                        <button class="minBetButton" disabled="">
-                                          <span class="textfit-container"
-                                            ><span
-                                              class="textfit-text"
-                                              style="
-                                                font-size: calc(
-                                                  var(--vp-rem, 1rem) * 0.8499999999999994
-                                                );
-                                              "
-                                              >Min</span
-                                            ></span
-                                          >
-                                        </button>
-                                        <div class="amountWrapper">
-                                          <div class="minMaxTextWrapper">
-                                            <div class="minText">
-                                              <span class="textfit-container"
-                                                ><span
-                                                  class="textfit-text"
-                                                  style="font-size: calc(var(--vp-rem, 1rem) * 0.7)"
-                                                  >0.10</span
-                                                ></span
-                                              >
-                                            </div>
-                                            <div class="maxText">
-                                              <span class="textfit-container"
-                                                ><span
-                                                  class="textfit-text"
-                                                  style="font-size: calc(var(--vp-rem, 1rem) * 0.7)"
-                                                  >100.00</span
-                                                ></span
-                                              >
-                                            </div>
+                                <div class="popupWrapper">
+                                  <div class="popupInner">
+                                    <div class="betAmountContent">
+                                      <div class="nonAdvance" [class.hide]="demoAdvance">
+                                        <div class="betAmountWrapper">
+                                          <div class="betAmountTitle">Bet Amount</div>
+                                          <div class="amountNumber">
+                                            <span>{{ demoAmount.toFixed(2) }}</span>
                                           </div>
-                                          <span
-                                            dir="ltr"
-                                            data-orientation="horizontal"
-                                            aria-disabled="false"
-                                            class="SliderRoot"
-                                            style="--radix-slider-thumb-transform: translateX(-50%)"
-                                            ><span data-orientation="horizontal" class="tracker"
-                                              ><span
-                                                data-orientation="horizontal"
-                                                class="slider-range"
-                                                style="left: 0%; right: 100%"
-                                              ></span></span
-                                            ><span
-                                              style="
-                                                transform: var(--radix-slider-thumb-transform);
-                                                position: absolute;
-                                                left: calc(0% + 7.42188px);
-                                              "
-                                              ><span
-                                                role="slider"
-                                                aria-valuemin="0"
-                                                aria-valuemax="40"
-                                                aria-orientation="horizontal"
-                                                data-orientation="horizontal"
-                                                tabindex="0"
-                                                class="thumb"
-                                                data-radix-collection-item=""
-                                                style=""
-                                                aria-valuenow="0"
-                                              ></span></span
-                                          ></span>
                                         </div>
-                                        <button class="maxBetButton">
-                                          <span class="textfit-container"
-                                            ><span
-                                              class="textfit-text"
-                                              style="
-                                                font-size: calc(
-                                                  var(--vp-rem, 1rem) * 0.7499999999999993
-                                                );
-                                              "
-                                              >Max</span
-                                            ></span
+                                        <div class="stepsWrapper">
+                                          @for (amount of stepAmounts; track amount) {
+                                            <button
+                                              class="stepButton"
+                                              type="button"
+                                              [attr.data-intro]="'step-' + amount"
+                                              [class.active]="demoAmount === amount"
+                                            >
+                                              <span class="textfit-container"
+                                                ><span class="textfit-text">{{ amount.toFixed(2) }}</span></span
+                                              >
+                                            </button>
+                                          }
+                                          <button
+                                            class="advanceButton stepButton"
+                                            type="button"
+                                            data-intro="advance"
+                                            [class.active]="demoAdvance"
                                           >
-                                        </button>
+                                            <span class="textfit-container"
+                                              ><span class="textfit-text">Advanced</span></span
+                                            >
+                                          </button>
+                                        </div>
+                                        <div class="inputWrapper">
+                                          <button
+                                            class="minBetButton"
+                                            type="button"
+                                            data-intro="min"
+                                            [disabled]="demoAmount <= 0.1"
+                                          >
+                                            <span class="textfit-container"
+                                              ><span class="textfit-text">Min</span></span
+                                            >
+                                          </button>
+                                          <div class="amountWrapper">
+                                            <div class="minMaxTextWrapper">
+                                              <div class="minText">
+                                                <span class="textfit-container"
+                                                  ><span class="textfit-text">0.10</span></span
+                                                >
+                                              </div>
+                                              <div class="maxText">
+                                                <span class="textfit-container"
+                                                  ><span class="textfit-text">100.00</span></span
+                                                >
+                                              </div>
+                                            </div>
+                                            <span
+                                              dir="ltr"
+                                              data-orientation="horizontal"
+                                              class="SliderRoot"
+                                              style="--radix-slider-thumb-transform: translateX(-50%)"
+                                            >
+                                              <span data-orientation="horizontal" class="tracker">
+                                                <span
+                                                  data-orientation="horizontal"
+                                                  class="slider-range"
+                                                  [style.left.%]="0"
+                                                  [style.right.%]="100 - demoSliderPercent"
+                                                ></span>
+                                              </span>
+                                              <span
+                                                style="
+                                                  transform: var(--radix-slider-thumb-transform);
+                                                  position: absolute;
+                                                "
+                                                [style.left.%]="demoSliderPercent"
+                                              >
+                                                <span
+                                                  role="slider"
+                                                  class="thumb"
+                                                  data-orientation="horizontal"
+                                                ></span>
+                                              </span>
+                                            </span>
+                                          </div>
+                                          <button
+                                            class="maxBetButton"
+                                            type="button"
+                                            data-intro="max"
+                                            [disabled]="demoAmount >= 100"
+                                          >
+                                            <span class="textfit-container"
+                                              ><span class="textfit-text">Max</span></span
+                                            >
+                                          </button>
+                                        </div>
+                                      </div>
+                                      <div class="advance" [class.active]="demoAdvance">
+                                        <div class="advanceWrap">
+                                          <button
+                                            type="button"
+                                            class="simpleModeButton stepButton"
+                                            data-intro="simple"
+                                          >
+                                            <span class="textfit-container"
+                                              ><span class="textfit-text">Simple Mode</span></span
+                                            >
+                                          </button>
+                                        </div>
                                       </div>
                                     </div>
-                                    <div class="advance"></div>
+                                    <button
+                                      class="submitBetPopup"
+                                      type="button"
+                                      data-intro="submit"
+                                    >
+                                      Apply
+                                    </button>
                                   </div>
-                                  <button class="submitBetPopup pressableButton">Apply</button>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="introChild after-active">
-                  <div class="sc-ieecgm kpYGM">
-                    <div class="sc-dJkawT gYPOMA">
-                      <div class="sc-hGPzmI gVVTVj">4</div>
-                      <span class="sc-dlVxDp gszWkp">Last Results</span>
-                    </div>
-                    <div class="sc-kfPrBu hWMpBT">
-                      The Last Results section shows multipliers from previous rounds. You can use
-                      these past numbers to help you make better betting choices.
-                    </div>
-                    <div class="sc-fKVpSb lesJZw">
-                      <img
-                        alt="result"
-                        src="blob:https://magic-spell.vcp0kuq2noxtbfautplyud.com/7fe1d4e0-9550-468a-95d9-aedb63168289"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div class="introChild after-active">
-                  <div class="sc-bBHyYg dYLpFn">
-                    <div class="game-limits">
-                      <div class="game-limits-title">Game Limits</div>
-                      <div class="game-limits-text">
-                        Game limits are set by the operator. The limits for this game are shown
-                        below.
-                      </div>
-                      <div class="bet-limits-wrap">
-                        <div class="bet-limits">
-                          <div class="bet-limits-title">Minimum bet:</div>
-                          <div class="bet-limits-value"><span>0.1</span></div>
-                        </div>
-                        <div class="bet-limits">
-                          <div class="bet-limits-title">Maximum bet:</div>
-                          <div class="bet-limits-value"><span>100</span></div>
-                        </div>
-                        <div class="bet-limits">
-                          <div class="bet-limits-title">Max. win for one bet:</div>
-                          <div class="bet-limits-value"><span>1000</span></div>
+                    } @else if (s.showLimits) {
+                      <div class="sc-iwjgNJ bXldcz">
+                        <div class="game-limits">
+                          <div class="game-limits-title">Game Limits</div>
+                          <div class="game-limits-text">
+                            {{ s.description }}
+                          </div>
+                          <div class="bet-limits-wrap">
+                            <div class="bet-limits">
+                              <div class="bet-limits-title">Minimum bet:</div>
+                              <div class="bet-limits-value">
+                                <span>{{ minBetLabel }}</span>
+                              </div>
+                            </div>
+                            <div class="bet-limits">
+                              <div class="bet-limits-title">Maximum bet:</div>
+                              <div class="bet-limits-value">
+                                <span>{{ maxBetLabel }}</span>
+                              </div>
+                            </div>
+                            <div class="bet-limits">
+                              <div class="bet-limits-title">Max. win for one bet:</div>
+                              <div class="bet-limits-value">
+                                <span>{{ maxWinLabel }}</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    } @else {
+                      <div class="sc-iwjgNJ bXldcz">
+                          <div class="sc-llYVCM ldLWjr">{{ i + 1 }}</div>
+                          <span class="sc-iJKPnr dyHhvT">{{ s.title }}</span>
+                        
+                        @if (s.description) {
+                          <div class="sc-bkkiih dEQynE">{{ s.description }}</div>
+                        }
+                        @if (s.listItems?.length) {
+                          <ul class="sc-giYhsS kEDMcK">
+                            @for (item of s.listItems; track item) {
+                              <li>{{ item }}</li>
+                            }
+                          </ul>
+                        }
+                        @if (s.image) {
+                          <div class="sc-ezbjtx fWUqgR">
+                            <img [alt]="s.title" [src]="s.image" />
+                          </div>
+                        }
+                      </div>
+                    }
                   </div>
-                </div>
+                }
               </div>
-              <div class="introPaginationWrapper">
-                <div class="paginationWrapper">
-                  <button type="button" class="nextPrevButton disabledNextPrevButton">
-                    <span class="prevNextText"
-                      ><span class="textfit-container"
-                        ><span class="textfit-text" style="font-size: 1.4rem">Previous</span></span
-                      ></span
-                    >
-                  </button>
-                  <div class="pageNumberWrapper">1/5</div>
-                  <button type="button" class="nextPrevButton">
-                    <span class="prevNextText"
-                      ><span class="textfit-container"
-                        ><span class="textfit-text" style="font-size: 1.4rem">Next</span></span
-                      ></span
-                    >
-                  </button>
-                </div>
+            </div>
+            <div class="introPaginationWrapper">
+              <div class="paginationWrapper">
+                <button
+                  type="button"
+                  class="nextPrevButton"
+                  [class.disabledNextPrevButton]="currentSlide === 0"
+                  [disabled]="currentSlide === 0"
+                  (click)="goPrev()"
+                >
+                  <span class="prevNextText"
+                    ><span class="textfit-container"
+                      ><span class="textfit-text">Previous</span></span
+                    ></span
+                  >
+                </button>
+                <div class="pageNumberWrapper">{{ currentSlide + 1 }}/{{ totalSlides }}</div>
+                <button type="button" class="nextPrevButton" (click)="goNext()">
+                  <span class="prevNextText"
+                    ><span class="textfit-container"
+                      ><span class="textfit-text">{{
+                        currentSlide >= totalSlides - 1 ? 'Start Game' : 'Next'
+                      }}</span></span
+                    ></span
+                  >
+                </button>
               </div>
             </div>
           </div>

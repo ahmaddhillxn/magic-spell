@@ -110,6 +110,18 @@ export class GuidenessModal implements OnDestroy {
     return this.slides.length;
   }
 
+  isSlideActive(index: number): boolean {
+    return this.currentSlide === index;
+  }
+
+  isSlideBefore(index: number): boolean {
+    return this.currentSlide === index + 1;
+  }
+
+  isSlideAfter(index: number): boolean {
+    return this.currentSlide === index - 1;
+  }
+
   get minBetLabel(): string {
     return this.formatAmount(this.stake.minBet);
   }
