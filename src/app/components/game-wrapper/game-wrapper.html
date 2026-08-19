@@ -27,6 +27,7 @@
                 [class.ms-live-multiplier--win]="multiplierTone === 'win'"
                 [class.ms-live-multiplier--lose]="multiplierTone === 'lose'"
                 [class.ms-live-multiplier--dropping]="animationPhase === 'resultDropping' || animationPhase === 'winPopupEntering' || animationPhase === 'winHolding' || animationPhase === 'winPopupExiting'"
+                [class.ms-live-multiplier--locked]="animationPhase === 'resultLocked'"
                 [class.ms-live-multiplier--exit]="animationPhase === 'reset'"
               >
                 {{ liveMultiplierLabel }}
@@ -48,7 +49,7 @@
                   [class.ms-history-chip--win]="resultIsWin(multiplier)"
                   [class.ms-history-chip--lose]="!resultIsWin(multiplier)"
                 >
-                  {{ multiplier.toFixed(2) }}
+                  <span class="ms-history-chip__value">{{ multiplier.toFixed(2) }}</span>
                 </li>
               }
             </ul>

@@ -162,17 +162,17 @@ export class MagicSpellScene {
 
   /** Head + chest anchors as % of stage height for HTML multiplier overlay. */
   getWizardAnchorPercents(stageHeight: number): { headY: number; chestY: number } {
-    const fallback = { headY: 20, chestY: 48 };
+    const fallback = { headY: 14, chestY: 48 };
     if (!this.main || stageHeight <= 0) return fallback;
 
     const bounds = this.main.getBounds();
     if (!bounds.height) return fallback;
 
-    const headY = ((bounds.y + bounds.height * 0.06) / stageHeight) * 100;
+    const headY = ((bounds.y + bounds.height * 0.02) / stageHeight) * 100;
     const chestY = ((bounds.y + bounds.height * 0.38) / stageHeight) * 100;
 
     return {
-      headY: Math.min(Math.max(headY, 10), 36),
+      headY: Math.min(Math.max(headY - 4, 8), 30),
       chestY: Math.min(Math.max(chestY, headY + 14), 62),
     };
   }

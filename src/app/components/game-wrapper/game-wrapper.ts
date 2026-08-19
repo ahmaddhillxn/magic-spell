@@ -59,7 +59,8 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   displayAmount = '0.10';
   displayPayout = '2.00x';
   payout = 2;
-  recentMultipliers = [20.59, 1.04, 2.25, 2.06, 5.8, 362.88, 1.34];
+  readonly maxRecentMultipliers = 10;
+  recentMultipliers = [20.59, 1.04, 2.25, 2.06, 5.8, 362.88, 1.34, 1.69, 2.69, 3.97];
   liveMultiplier = 1;
   liveMultiplierVisible = false;
   multiplierTone: 'neutral' | 'win' | 'lose' = 'neutral';
@@ -68,7 +69,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   roundRunning = false;
   animationPhase: ResultAnimationPhase = 'idle';
   prefersReducedMotion = false;
-  multiplierHeadY = '20%';
+  multiplierHeadY = '14%';
   multiplierChestY = '48%';
 
   private app?: Application;
@@ -301,7 +302,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
       mode === 'win' || mode === 'winBig' || (mode === 'auto' && targetMultiplier >= this.payout);
     const winAmount = didWin ? computedWinAmount : 0;
     const countingMs = this.prefersReducedMotion ? 120 : 600;
-    const dropMs = this.prefersReducedMotion ? 120 : 380;
+    const dropMs = this.prefersReducedMotion ? 120 : 2000;
     const popupEnterMs = this.prefersReducedMotion ? 120 : 290;
     const holdMs = this.prefersReducedMotion ? 240 : 1100;
     const popupExitMs = this.prefersReducedMotion ? 120 : 280;
@@ -334,7 +335,10 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
       this.liveMultiplier = targetMultiplier;
       this.multiplierTone = 'neutral';
       this.animationPhase = 'resultLocked';
-      this.recentMultipliers = [targetMultiplier, ...this.recentMultipliers].slice(0, 7);
+      this.recentMultipliers = [targetMultiplier, ...this.recentMultipliers].slice(
+        0,
+        this.maxRecentMultipliers,
+      );
       this.betHistory.emitSpinResult({
         id: crypto.randomUUID(),
         time: new Date(),
@@ -348,13 +352,11 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
 
       this.queuePhase(() => {
         this.animationPhase = 'resultDropping';
+        this.multiplierTone = didWin ? 'win' : 'lose';
         this.cdr.detectChanges();
       }, this.prefersReducedMotion ? 60 : 90);
 
       this.queuePhase(() => {
-        // User-requested order:
-        // white counting -> white drop -> then final green/red lock
-        this.multiplierTone = didWin ? 'win' : 'lose';
         this.animationPhase = 'resultLocked';
         this.cdr.detectChanges();
       }, (this.prefersReducedMotion ? 60 : 90) + dropMs);
