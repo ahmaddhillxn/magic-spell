@@ -8010,8 +8010,8 @@ html[dir='rtl'] {
   pointer-events: none;
   --ms-head-y: 14%;
   --ms-chest-y: 48%;
-  --ms-popup-enter-ms: 290ms;
-  --ms-popup-exit-ms: 280ms;
+  --ms-popup-enter-ms: 380ms;
+  --ms-popup-exit-ms: 650ms;
   --ms-drop-ms: 380ms;
   --ms-result-drop-ms: 2s;
   --ms-drop-y: 16rem;
@@ -8108,10 +8108,10 @@ html[dir='rtl'] {
   position: absolute;
   top: 10.2rem;
   left: 50%;
-  transform: translate3d(-50%, 0, 0) scale(0.15);
-  transform-origin: center;
+  transform: translate3d(-50%, 0, 0) scale(0.05);
+  transform-origin: center center;
   opacity: 0;
-  width: clamp(16rem, 22vw, 23rem);
+  width: clamp(20rem, 28vw, 28rem);
   height: clamp(7rem, 10vw, 9.2rem);
   border: 0.2rem solid #ffe600;
   border-radius: 1.5rem;
@@ -8122,19 +8122,48 @@ html[dir='rtl'] {
 }
 
 .ms-win-popup--enter {
-  opacity: 1;
-  transform: translate3d(-50%, 0, 0) scale(1);
-  transition:
-    transform var(--ms-popup-enter-ms) cubic-bezier(0.16, 1, 0.3, 1),
-    opacity var(--ms-popup-enter-ms) cubic-bezier(0.16, 1, 0.3, 1);
+  animation: ms-win-popup-enter var(--ms-popup-enter-ms) cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .ms-win-popup--exit {
-  opacity: 0;
-  transform: translate3d(-50%, 0, 0) scale(0.1);
-  transition:
-    transform var(--ms-popup-exit-ms) cubic-bezier(0.5, 0, 0.9, 0.45),
-    opacity var(--ms-popup-exit-ms) cubic-bezier(0.5, 0, 0.9, 0.45);
+  animation: ms-win-popup-exit var(--ms-popup-exit-ms) ease-in-out forwards;
+}
+
+@keyframes ms-win-popup-enter {
+  0% {
+    transform: translate3d(-50%, 0, 0) scale(0.05);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes ms-win-popup-exit {
+  0% {
+    transform: translate3d(-50%, 0, 0) scale(1);
+    opacity: 1;
+  }
+  30% {
+    transform: translate3d(-50%, 0, 0) scale(0.35);
+    opacity: 0.7;
+  }
+  55% {
+    transform: translate3d(-50%, 0, 0) scale(0.8);
+    opacity: 1;
+  }
+  80% {
+    transform: translate3d(-50%, 0, 0) scale(0.15);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0) scale(0.05);
+    opacity: 0;
+  }
 }
 
 .ms-win-popup__title,
@@ -8144,17 +8173,16 @@ html[dir='rtl'] {
   justify-content: center;
   color: #111;
   font-weight: 800;
+  height: 50%;
 }
 
 .ms-win-popup__title {
-  height: 40%;
   background: rgba(0, 0, 0, 0.88);
   color: #ffe600;
   font-size: clamp(1.4rem, 2.1vw, 2.1rem);
 }
 
 .ms-win-popup__amount {
-  height: 60%;
   font-size: clamp(2rem, 3vw, 3.2rem);
 }
 
@@ -9358,7 +9386,7 @@ html[dir='rtl'] {
 
 :host-context(html.is-portrait) .ms-win-popup {
   top: 4.8rem;
-  width: clamp(12.8rem, 44vw, 16rem);
+  width: clamp(16rem, 50vw, 22rem);
   height: clamp(5.6rem, 18vw, 7rem);
   border-width: 0.16rem;
   border-radius: 1.2rem;

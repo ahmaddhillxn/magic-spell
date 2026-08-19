@@ -14,7 +14,7 @@
             @if (winPopupVisible) {
               <div
                 class="ms-win-popup"
-                [class.ms-win-popup--enter]="animationPhase === 'winPopupEntering'"
+                [class.ms-win-popup--enter]="animationPhase === 'winPopupEntering' || animationPhase === 'winHolding'"
                 [class.ms-win-popup--exit]="animationPhase === 'winPopupExiting' || animationPhase === 'reset'"
               >
                 <div class="ms-win-popup__title">You Win</div>

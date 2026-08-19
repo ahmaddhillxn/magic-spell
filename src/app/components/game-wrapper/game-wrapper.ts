@@ -303,9 +303,9 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     const winAmount = didWin ? computedWinAmount : 0;
     const countingMs = this.prefersReducedMotion ? 120 : 600;
     const dropMs = this.prefersReducedMotion ? 120 : 2000;
-    const popupEnterMs = this.prefersReducedMotion ? 120 : 290;
+    const popupEnterMs = this.prefersReducedMotion ? 120 : 380;
     const holdMs = this.prefersReducedMotion ? 240 : 1100;
-    const popupExitMs = this.prefersReducedMotion ? 120 : 280;
+    const popupExitMs = this.prefersReducedMotion ? 120 : 650;
     const multiplierExitMs = this.prefersReducedMotion ? 90 : 140;
 
     this.clearRoundTimers();
