@@ -5568,12 +5568,13 @@ img {
 
 .bet-history .item-wrap {
   border-radius: var(--vp-radius-m);
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: #ffffff26;
   margin-bottom: 0.8rem;
 }
 
-.bet-history .item-wrap.odd {
-  background-color: rgba(255, 255, 255, 0.05);
+.bet-history .item-wrap.odd,
+.bet-history .item-wrap.even {
+  background-color: #ffffff0d;
 }
 
 .bet-history .bet-detail {
@@ -7912,8 +7913,6 @@ html[dir='rtl'] {
 }
 
 .hvRfuF .item-wrap {
-  background: var(--bet-history-item-bg);
-  border-radius: 0px 0px 0.48rem 0.48rem;
   box-shadow: var(--bet-history-shadow);
 }
 
@@ -8935,20 +8934,25 @@ html[dir='rtl'] {
 }
 
 :host .bet-history .item-wrap {
-  background: transparent !important;
-  border-radius: 0 !important;
-  margin-bottom: 0 !important;
+  width: 100%;
+  border-radius: var(--vp-radius-m) !important;
+  background-color: #ffffff26 !important;
+  margin-bottom: 0.8rem !important;
   overflow: hidden;
-  box-shadow: none !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: var(--bet-history-shadow) !important;
+  border-bottom: none !important;
 }
 
 :host .bet-history .item-wrap.even {
-  background: transparent !important;
+  background-color: #ffffff0d !important;
 }
 
 :host .bet-history .item-wrap.open {
-  background: #1a1d23 !important;
+  background-color: #ffffff26 !important;
+}
+
+:host .bet-history .item-wrap.open.even {
+  background-color: #ffffff0d !important;
 }
 
 :host .bet-history .history-row {
@@ -9063,7 +9067,11 @@ html[dir='rtl'] {
   padding: 1.5rem 1.2rem 1.55rem;
   border: 0.1rem solid rgba(255, 255, 255, 0.55);
   border-radius: 0.8rem;
-  background: transparent;
+  background-color: #ffffff26;
+}
+
+:host .bet-history .item-wrap.even .bet-detail-inner {
+  background-color: #ffffff0d;
 }
 
 :host .bet-history .item-wrap.open .bet-detail-inner::after {
@@ -9113,7 +9121,7 @@ html[dir='rtl'] {
   }
 
   :host .bet-history .bet-history-item {
-    padding: 0.8rem !important;
+    padding: 0.6rem !important;
     border: none !important;
     border-radius: 0 !important;
     background: transparent !important;
@@ -9129,13 +9137,13 @@ html[dir='rtl'] {
     justify-content: space-between !important;
     align-items: center !important;
     box-sizing: border-box !important;
-    height: 4.4rem !important;
-    min-height: 4.4rem !important;
-    margin: 0 0 0.8rem !important;
-    padding: 0.4rem 0.4rem 0.4rem 0.8rem !important;
+    height: 3.6rem !important;
+    min-height: 3.6rem !important;
+    margin: 0 0 0.6rem !important;
+    padding: 0.25rem 0.4rem 0.25rem 0.65rem !important;
     border: 1px solid #ffffff29 !important;
     border-radius: 1.6rem !important;
-    font-size: 1.2rem !important;
+    font-size: 1.1rem !important;
     background: transparent !important;
   }
 
@@ -9169,9 +9177,9 @@ html[dir='rtl'] {
     border-radius: 1.6rem !important;
     max-width: none !important;
     height: auto !important;
-    padding: 0.2rem 0.8rem !important;
+    padding: 0.15rem 0.65rem !important;
     color: #fff !important;
-    font-size: 1.2rem !important;
+    font-size: 1.1rem !important;
     font-weight: 500 !important;
   }
 
@@ -9199,14 +9207,14 @@ html[dir='rtl'] {
   :host .bet-history .win-box {
     align-items: center;
     border-radius: 1.6rem !important;
-    padding: 0.35rem 0.7rem !important;
-    gap: 0.7rem !important;
+    padding: 0.2rem 0.6rem !important;
+    gap: 0.55rem !important;
   }
 
   :host .bet-history .bet-box {
     box-sizing: border-box !important;
-    height: 4.4rem !important;
-    min-height: 4.4rem !important;
+    height: 3.6rem !important;
+    min-height: 3.6rem !important;
     color: #ffc300 !important;
     background: rgba(255, 195, 0, 0.1) !important;
     border: 0.2rem solid rgba(255, 195, 0, 0.1) !important;
@@ -9217,19 +9225,19 @@ html[dir='rtl'] {
   }
 
   :host .bet-history .win-bet-icon {
-    width: 2.4rem !important;
-    height: 2.4rem !important;
+    width: 2rem !important;
+    height: 2rem !important;
     flex-shrink: 0;
   }
 
   :host .bet-history .win-bet-label {
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     font-weight: 500;
   }
 
   :host .bet-history .bet-value,
   :host .bet-history .win-value {
-    font-size: 1.35rem !important;
+    font-size: 1.2rem !important;
     font-weight: 700 !important;
   }
 

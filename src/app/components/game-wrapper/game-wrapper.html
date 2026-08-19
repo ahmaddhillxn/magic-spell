@@ -49,7 +49,7 @@
                   [class.ms-history-chip--win]="resultIsWin(multiplier)"
                   [class.ms-history-chip--lose]="!resultIsWin(multiplier)"
                 >
-                  <span class="ms-history-chip__value">{{ multiplier.toFixed(2) }}</span>
+                  <span class="ms-history-chip__value" [class.ms-history-chip__value--long]="multiplier.toFixed(2).length >= 5">{{ multiplier.toFixed(2) }}</span>
                 </li>
               }
             </ul>
