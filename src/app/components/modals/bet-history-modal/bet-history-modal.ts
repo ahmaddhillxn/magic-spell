@@ -56,12 +56,18 @@ export class BetHistoryModal implements OnInit, OnDestroy {
   }
 
   getDateLabel(item: any): string {
-    return `${this.getHourValue(item)} ${this.getDayValue(item)}`;
+    const hour = this.getHourValue(item);
+    const day = this.getDayValue(item);
+    if (hour === '--' || day === '--') return '--';
+    return `${hour} | ${day}`;
   }
 
   getBetId(item: any): string {
-    const id = item?.id ?? item?.betId ?? item?._id;
-    return id == null || id === '' ? '--' : String(id);
+    const raw = item?.id ?? item?.betId ?? item?._id;
+    const numeric = this.toNumber(raw);
+    if (numeric != null) return String(Math.trunc(numeric));
+    if (typeof raw === 'string' && /^\d+$/.test(raw.trim())) return raw.trim();
+    return '--';
   }
 
   getPayout(item: any): string {

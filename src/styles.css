@@ -23,11 +23,21 @@ html {
   text-size-adjust: 100%;
   touch-action: manipulation;
 }
+
+@font-face {
+  font-family: Rubik;
+  src: url('/assets/magicSpell/fonts/Rubik-VariableFont_wght.woff2') format('woff2-variations');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 body {
   margin: 0;
   height: 100%;
-  font-family: Cinzel, sans-serif;
-  font-variation-settings: 'wght' 700;
+  font-family: Rubik, sans-serif;
+  font-weight: 700;
+  font-variation-settings: normal;
   color: #fff;
   position: relative;
   z-index: 1;
@@ -213,11 +223,11 @@ html.magicSpell {
     --vp-radius-pill: 99.9rem;
 }
 :root, [data-radius=mildly] {
-    --vp-radius-xs: .4rem;
-    --vp-radius-s: .8rem;
-    --vp-radius-m: 1.2rem;
-    --vp-radius-l: 1.6rem;
-    --vp-radius-xl: 2.4rem;
+    --vp-radius-xs: 0;
+    --vp-radius-s: .2rem;
+    --vp-radius-m: .4rem;
+    --vp-radius-l: .8rem;
+    --vp-radius-xl: 1.2rem;
     --vp-radius-pill: 99.9rem;
 }
 :root {

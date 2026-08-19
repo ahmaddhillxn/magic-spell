@@ -5,6 +5,34 @@
         <div class="sc-cTAnsW bEDqIM">
           <!-- Pixi mounts both Magic Spell spines here (background + wizard) -->
           <div #spineHost class="spine-host hkNpoe"></div>
+          <div
+            class="ms-round-overlay"
+            [attr.data-phase]="animationPhase"
+            [style.--ms-head-y]="multiplierHeadY"
+            [style.--ms-chest-y]="multiplierChestY"
+          >
+            @if (winPopupVisible) {
+              <div
+                class="ms-win-popup"
+                [class.ms-win-popup--enter]="animationPhase === 'winPopupEntering'"
+                [class.ms-win-popup--exit]="animationPhase === 'winPopupExiting' || animationPhase === 'reset'"
+              >
+                <div class="ms-win-popup__title">You Win</div>
+                <div class="ms-win-popup__amount">{{ winAmountLabel }}</div>
+              </div>
+            }
+            @if (liveMultiplierVisible) {
+              <div
+                class="ms-live-multiplier"
+                [class.ms-live-multiplier--win]="multiplierTone === 'win'"
+                [class.ms-live-multiplier--lose]="multiplierTone === 'lose'"
+                [class.ms-live-multiplier--dropping]="animationPhase === 'resultDropping' || animationPhase === 'winPopupEntering' || animationPhase === 'winHolding' || animationPhase === 'winPopupExiting'"
+                [class.ms-live-multiplier--exit]="animationPhase === 'reset'"
+              >
+                {{ liveMultiplierLabel }}
+              </div>
+            }
+          </div>
         </div>
       </div>
       <div class="sc-hmjqoT jbsyeL">
@@ -12,7 +40,19 @@
           <div class="sc-bTfXyB bLlISG">
             <img alt="Logo" src="/assets/magicSpell/images/header/logo.png" />
           </div>
-          <aside class="sc-jIkVMy bIPPyc"><ul class="sc-ZOuZR eKrAkB"></ul></aside>
+          <aside class="sc-jIkVMy bIPPyc">
+            <ul class="sc-ZOuZR eKrAkB">
+              @for (multiplier of recentMultipliers; track multiplier + '-' + $index) {
+                <li
+                  class="ms-history-chip"
+                  [class.ms-history-chip--win]="resultIsWin(multiplier)"
+                  [class.ms-history-chip--lose]="!resultIsWin(multiplier)"
+                >
+                  {{ multiplier.toFixed(2) }}
+                </li>
+              }
+            </ul>
+          </aside>
           <div class="sc-kHOZcY NYQnx">
             <div class="sc-hOGkBq imllRz">
               <div class="sc-jQrzWy xaCBe">
@@ -171,7 +211,17 @@
                     </div>
                   </div>
                 </div>
-                <div class="sc-bilA-Dt hPysmo"><button class="sc-eGPYLs gIPpIY">Bet</button></div>
+                <div class="sc-bilA-Dt hPysmo">
+                  <button
+                    class="sc-eGPYLs"
+                    [class.gIPpIY]="!roundRunning"
+                    [class.iYgYIR]="roundRunning"
+                    type="button"
+                    (click)="placeBet()"
+                  >
+                    Bet
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -211,6 +261,21 @@
           <span class="anim-panel__status anim-panel__status--err">{{ error }}</span>
         }
       </header>
+
+      <section class="anim-panel__section anim-panel__section--result">
+        <h4>Result Demo</h4>
+        <div class="anim-panel__controls anim-panel__controls--result">
+          <button type="button" class="anim-btn anim-btn--result-win" (click)="demoWin()">
+            Win
+          </button>
+          <button type="button" class="anim-btn anim-btn--result-big" (click)="demoWinBig()">
+            Win Big
+          </button>
+          <button type="button" class="anim-btn anim-btn--result-lose" (click)="demoLose()">
+            Lose
+          </button>
+        </div>
+      </section>
 
       <div class="anim-panel__controls">
         <button

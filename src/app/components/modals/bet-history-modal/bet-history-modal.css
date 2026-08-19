@@ -5363,7 +5363,8 @@ img {
 
 .bet-history .titles {
   color: rgb(255, 255, 255);
-  font-variation-settings: 'wght' 400;
+  font-weight: 400;
+  font-variation-settings: normal;
   width: 100%;
   padding: 0.8rem 1.75rem 0.8rem 0.8rem;
   font-size: 1.6rem;
@@ -5399,7 +5400,8 @@ img {
 
 @media (orientation: portrait) and (width <= 900px) {
   .bet-history .date {
-    font-variation-settings: 'wght' 500;
+    font-weight: 500;
+    font-variation-settings: normal;
     width: auto;
   }
 }
@@ -8875,5 +8877,389 @@ html[dir='rtl'] {
 @media (orientation: portrait) and (max-width: 900px) {
   .gzXzTQ {
     inset: 0px;
+  }
+}
+
+/* ===== Bet History inner list only — keep original modal header ===== */
+:host .bet-history .title-wrapper.main-titles {
+  padding: 0.4rem 0 0.2rem !important;
+}
+
+:host .bet-history .title-wrapper.main-titles .titles {
+  padding: 0.4rem 1rem 0.8rem !important;
+  border: none !important;
+  margin: 0 !important;
+  color: rgba(255, 255, 255, 0.62) !important;
+  font-size: 1.5rem !important;
+  font-weight: 500 !important;
+}
+
+:host .vim--modal__inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+:host .vim--modal__body,
+:host .hvRfuF,
+:host .bet-history {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+:host .bet-history .wrapper-items {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  gap: 0 !important;
+  padding-right: 0.4rem !important;
+  padding-bottom: 1.2rem !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+:host .bet-history .wrapper-items::-webkit-scrollbar {
+  width: 0.32rem !important;
+}
+
+:host .bet-history .wrapper-items::-webkit-scrollbar-track {
+  background: #1a1f28 !important;
+}
+
+:host .bet-history .wrapper-items::-webkit-scrollbar-thumb {
+  background: #26a69a !important;
+  border-radius: 1rem !important;
+}
+
+:host .bet-history .item-wrap {
+  background: transparent !important;
+  border-radius: 0 !important;
+  margin-bottom: 0 !important;
+  overflow: hidden;
+  box-shadow: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+:host .bet-history .item-wrap.even {
+  background: transparent !important;
+}
+
+:host .bet-history .item-wrap.open {
+  background: #1a1d23 !important;
+}
+
+:host .bet-history .history-row {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+:host .bet-history .bet-history-item {
+  padding: 0 !important;
+}
+
+:host .bet-history .history-row .titles {
+  padding: 1rem 1rem !important;
+  font-size: 1.5rem !important;
+  align-items: center;
+}
+
+:host .bet-history .date {
+  width: 34% !important;
+  color: #fff !important;
+  font-weight: 500 !important;
+}
+
+:host .bet-history .bet {
+  width: 18% !important;
+  color: #fff !important;
+}
+
+:host .bet-history .coefficient {
+  width: 18% !important;
+  background: transparent !important;
+  padding: 0 !important;
+  min-height: auto !important;
+}
+
+:host .bet-history .coefficient-inner {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  max-width: none !important;
+  color: inherit !important;
+}
+
+:host .bet-history .cashout {
+  width: 20% !important;
+  color: #fff !important;
+}
+
+:host .bet-history .coefficient.win,
+:host .bet-history .coefficient.win .coefficient-inner,
+:host .bet-history .cashout.win {
+  color: #2ee26a !important;
+}
+
+:host .bet-history .coeff-desktop {
+  display: inline !important;
+}
+
+:host .bet-history .coeff-mobile {
+  display: none !important;
+}
+
+:host .bet-history .arrow-spacer {
+  width: 5%;
+}
+
+:host .bet-history .bet-history-item .arrow {
+  width: 8% !important;
+  transform: rotate(180deg) !important;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+:host .bet-history .bet-history-item .arrow.open {
+  transform: rotate(0deg) !important;
+}
+
+:host .bet-history .bet-history-item .arrow svg {
+  width: 1.15rem !important;
+  height: auto !important;
+  stroke: currentColor !important;
+  fill: none !important;
+}
+
+@media (orientation: landscape), (min-width: 901px) {
+  :host .bet-history .win-bet-box,
+  :host .bet-history .show-detail-button {
+    display: none !important;
+  }
+}
+
+:host .bet-history .item-wrap.open .history-row .titles {
+  padding: 0.95rem 1rem 0.7rem !important;
+}
+
+:host .bet-history .bet-detail.show {
+  height: auto !important;
+  padding: 0 0.7rem 1.2rem;
+}
+
+:host .bet-history .bet-detail-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  margin: 0;
+  min-height: 7.2rem;
+  padding: 1.5rem 1.2rem 1.55rem;
+  border: 0.1rem solid rgba(255, 255, 255, 0.55);
+  border-radius: 0.8rem;
+  background: transparent;
+}
+
+:host .bet-history .item-wrap.open .bet-detail-inner::after {
+  content: none;
+}
+
+:host .bet-history .detail-col {
+  min-width: 0;
+}
+
+:host .bet-history .detail-label {
+  color: #fff;
+  font-size: 1.35rem;
+  margin-bottom: 0.35rem;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+:host .bet-history .detail-value {
+  color: #fff;
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
+  :host .bet-history .title-wrapper.main-titles {
+    display: none !important;
+  }
+
+  :host .bet-history .wrapper-items {
+    gap: 0.8rem !important;
+    padding: 0.4rem 0.15rem 1rem !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  :host .bet-history .item-wrap,
+  :host .bet-history .item-wrap.even,
+  :host .bet-history .item-wrap.open {
+    background: #121619 !important;
+    border: none !important;
+    border-bottom: none !important;
+    border-radius: 1.2rem !important;
+    margin-bottom: 0.8rem !important;
+    overflow: hidden;
+  }
+
+  :host .bet-history .bet-history-item {
+    padding: 0.8rem !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+  }
+
+  :host .bet-history .history-row {
+    pointer-events: none;
+  }
+
+  :host .bet-history .history-row .titles,
+  :host .bet-history .item-wrap.open .history-row .titles {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    box-sizing: border-box !important;
+    height: 4.4rem !important;
+    min-height: 4.4rem !important;
+    margin: 0 0 0.8rem !important;
+    padding: 0.4rem 0.4rem 0.4rem 0.8rem !important;
+    border: 1px solid #ffffff29 !important;
+    border-radius: 1.6rem !important;
+    font-size: 1.2rem !important;
+    background: transparent !important;
+  }
+
+  :host .bet-history .date {
+    width: auto !important;
+    flex: 0 1 auto !important;
+    font-weight: 500 !important;
+    font-variation-settings: normal !important;
+    font-size: 1.2rem !important;
+  }
+
+  :host .bet-history .bet.row-desktop,
+  :host .bet-history .cashout.row-desktop,
+  :host .bet-history .bet-history-item .arrow {
+    display: none !important;
+  }
+
+  :host .bet-history .coefficient {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    background: transparent !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  :host .bet-history .coefficient-inner,
+  :host .bet-history .coefficient.lose .coefficient-inner {
+    background: #637b87 !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    border-radius: 1.6rem !important;
+    max-width: none !important;
+    height: auto !important;
+    padding: 0.2rem 0.8rem !important;
+    color: #fff !important;
+    font-size: 1.2rem !important;
+    font-weight: 500 !important;
+  }
+
+  :host .bet-history .coefficient.win .coefficient-inner {
+    background: #0a557a !important;
+    border: none !important;
+  }
+
+  :host .bet-history .coeff-desktop {
+    display: none !important;
+  }
+
+  :host .bet-history .coeff-mobile {
+    display: inline !important;
+  }
+
+  :host .bet-history .win-bet-box {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.45rem !important;
+    pointer-events: auto;
+  }
+
+  :host .bet-history .bet-box,
+  :host .bet-history .win-box {
+    align-items: center;
+    border-radius: 1.6rem !important;
+    padding: 0.35rem 0.7rem !important;
+    gap: 0.7rem !important;
+  }
+
+  :host .bet-history .bet-box {
+    box-sizing: border-box !important;
+    height: 4.4rem !important;
+    min-height: 4.4rem !important;
+    color: #ffc300 !important;
+    background: rgba(255, 195, 0, 0.1) !important;
+    border: 0.2rem solid rgba(255, 195, 0, 0.1) !important;
+  }
+
+  :host .bet-history .win-box {
+    display: none !important;
+  }
+
+  :host .bet-history .win-bet-icon {
+    width: 2.4rem !important;
+    height: 2.4rem !important;
+    flex-shrink: 0;
+  }
+
+  :host .bet-history .win-bet-label {
+    font-size: 1.05rem;
+    font-weight: 500;
+  }
+
+  :host .bet-history .bet-value,
+  :host .bet-history .win-value {
+    font-size: 1.35rem !important;
+    font-weight: 700 !important;
+  }
+
+  :host .bet-history .show-detail-button {
+    display: flex !important;
+    margin-top: 0.55rem !important;
+    padding: 0.35rem 0 !important;
+    font-size: 1.2rem !important;
+    color: #fff !important;
+    pointer-events: auto;
+  }
+
+  :host .bet-history .bet-detail.show {
+    padding: 0.15rem 0 0.15rem;
+  }
+
+  :host .bet-history .bet-detail-inner {
+    min-height: 7.4rem;
+    padding: 1.35rem 1rem 1.4rem;
+    border: 0.12rem solid #fff;
+    border-radius: 0.9rem;
+  }
+
+  :host .bet-history .detail-label {
+    font-size: 1.25rem;
+    color: #fff;
+    margin-bottom: 0.4rem;
+  }
+
+  :host .bet-history .detail-value {
+    font-size: 1.45rem;
   }
 }

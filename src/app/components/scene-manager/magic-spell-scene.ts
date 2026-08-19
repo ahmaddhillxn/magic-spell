@@ -29,6 +29,9 @@ export class MagicSpellScene {
   private destroyed = false;
   private wizardBusy = false;
   private manualControl = false;
+  private pendingResultAnim: string | null = null;
+  private resultCompleteCallback?: () => void;
+  private resultTimeout: ReturnType<typeof setTimeout> | null = null;
 
   private readonly onWizardComplete = (entry: TrackEntry): void => {
     this.handleWizardComplete(entry);
@@ -132,18 +135,72 @@ export class MagicSpellScene {
   }
 
   resumeIdle(): void {
+    this.clearResultTimeout();
+    this.pendingResultAnim = null;
+    this.resultCompleteCallback = undefined;
     this.manualControl = false;
     this.wizardBusy = false;
     this.playBackgroundIdle();
     this.startWizardIdleLoop();
   }
 
-  playWin(): void {
-    this.playWizard(MAGIC_SPELL_ANIMS.wizarding, false);
+  playWin(onComplete?: () => void): void {
+    this.playResultSequence(MAGIC_SPELL_ANIMS.win, onComplete);
   }
 
-  playLose(): void {
-    this.playWizard(MAGIC_SPELL_ANIMS.wizarding, false);
+  playBigWin(onComplete?: () => void): void {
+    const outcome =
+      this.main && this.hasAnim(this.main, MAGIC_SPELL_ANIMS.win4)
+        ? MAGIC_SPELL_ANIMS.win4
+        : MAGIC_SPELL_ANIMS.win2;
+    this.playResultSequence(outcome, onComplete);
+  }
+
+  playLose(onComplete?: () => void): void {
+    this.playResultSequence(MAGIC_SPELL_ANIMS.lose, onComplete);
+  }
+
+  /** Head + chest anchors as % of stage height for HTML multiplier overlay. */
+  getWizardAnchorPercents(stageHeight: number): { headY: number; chestY: number } {
+    const fallback = { headY: 20, chestY: 48 };
+    if (!this.main || stageHeight <= 0) return fallback;
+
+    const bounds = this.main.getBounds();
+    if (!bounds.height) return fallback;
+
+    const headY = ((bounds.y + bounds.height * 0.06) / stageHeight) * 100;
+    const chestY = ((bounds.y + bounds.height * 0.38) / stageHeight) * 100;
+
+    return {
+      headY: Math.min(Math.max(headY, 10), 36),
+      chestY: Math.min(Math.max(chestY, headY + 14), 62),
+    };
+  }
+
+  private playResultSequence(outcomeAnim: string, onComplete?: () => void): void {
+    if (!this.main) {
+      onComplete?.();
+      return;
+    }
+    this.manualControl = true;
+    this.wizardBusy = true;
+    this.resultCompleteCallback = onComplete;
+    this.pendingResultAnim = this.hasAnim(this.main, outcomeAnim) ? outcomeAnim : MAGIC_SPELL_ANIMS.wizarding;
+
+    const main = this.main;
+    if (this.hasAnim(main, MAGIC_SPELL_ANIMS.wizarding)) {
+      main.state.setAnimation(0, MAGIC_SPELL_ANIMS.wizarding, false);
+      if (this.hasAnim(main, outcomeAnim)) {
+        main.state.addAnimation(0, outcomeAnim, false, 0);
+      }
+    } else if (this.hasAnim(main, outcomeAnim)) {
+      main.state.setAnimation(0, outcomeAnim, false);
+    } else {
+      this.finishResultSequence();
+      return;
+    }
+
+    this.armResultTimeout();
   }
 
   startWizardIdleLoop(): void {
@@ -154,6 +211,9 @@ export class MagicSpellScene {
 
   destroy(): void {
     this.destroyed = true;
+    this.clearResultTimeout();
+    this.pendingResultAnim = null;
+    this.resultCompleteCallback = undefined;
     const main = this.main;
     const background = this.background;
     const root = this.root;
@@ -319,25 +379,49 @@ export class MagicSpellScene {
 
   private handleWizardComplete(entry: TrackEntry): void {
     if (!this.main || entry.trackIndex !== 0) return;
-    if (this.manualControl) return;
-
     const finished = entry.animation?.name ?? '';
 
-    if (this.wizardBusy) {
-      if (finished === MAGIC_SPELL_ANIMS.wizarding) {
-        const next = this.hasAnim(this.main, MAGIC_SPELL_ANIMS.win)
-          ? MAGIC_SPELL_ANIMS.win
-          : MAGIC_SPELL_ANIMS.lose;
-        if (this.hasAnim(this.main, next)) {
-          this.main.state.setAnimation(0, next, false);
-          return;
-        }
+    if (this.resultCompleteCallback || this.pendingResultAnim) {
+      if (finished === MAGIC_SPELL_ANIMS.wizarding && this.pendingResultAnim !== MAGIC_SPELL_ANIMS.wizarding) {
+        return;
       }
+      this.finishResultSequence();
+      return;
+    }
+
+    if (this.manualControl) return;
+
+    if (this.wizardBusy) {
       this.startWizardIdleLoop();
       return;
     }
 
     this.playRandomWizardIdle();
+  }
+
+  private armResultTimeout(): void {
+    this.clearResultTimeout();
+    const wizarding = this.main?.skeleton.data.findAnimation(MAGIC_SPELL_ANIMS.wizarding);
+    const outcome = this.pendingResultAnim
+      ? this.main?.skeleton.data.findAnimation(this.pendingResultAnim)
+      : null;
+    const durationMs = Math.round(((wizarding?.duration ?? 0) + (outcome?.duration ?? 0)) * 1000);
+    this.resultTimeout = setTimeout(() => this.finishResultSequence(), Math.max(durationMs + 180, 900));
+  }
+
+  private finishResultSequence(): void {
+    if (!this.pendingResultAnim && !this.resultCompleteCallback) return;
+    this.clearResultTimeout();
+    this.pendingResultAnim = null;
+    const callback = this.resultCompleteCallback;
+    this.resultCompleteCallback = undefined;
+    callback?.();
+  }
+
+  private clearResultTimeout(): void {
+    if (this.resultTimeout == null) return;
+    clearTimeout(this.resultTimeout);
+    this.resultTimeout = null;
   }
 
   private getAnimations(spine: Spine): string[] {

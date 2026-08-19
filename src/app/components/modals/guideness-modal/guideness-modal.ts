@@ -68,6 +68,10 @@ export class GuidenessModal implements OnDestroy {
     return ((this.demoAmount - this.minBet) / (this.maxBet - this.minBet)) * 100;
   }
 
+  private get isMobile(): boolean {
+    return window.innerHeight > window.innerWidth && window.innerWidth <= 900;
+  }
+
   readonly slides: GuideSlide[] = [
     {
       welcome: true,
@@ -75,7 +79,7 @@ export class GuidenessModal implements OnDestroy {
       description:
         'Welcome to Magic Spell! Cast a magic spell to get a random multiplier. If the multiplier is equal to or higher than your payout, you win! But if the magic fails, you lose and the round ends.',
       body: 'Watch the wizard do magic and see your multiplier. On the top side, you can see the results of past rounds to help you choose your next bet.',
-      image: GAME_ASSETS.images.gameBoard,
+      get image() { return window.innerHeight > window.innerWidth && window.innerWidth <= 900 ? GAME_ASSETS.images.gameBoardMobile : GAME_ASSETS.images.gameBoard; },
     },
     {
       title: 'Making Moves',
@@ -85,7 +89,7 @@ export class GuidenessModal implements OnDestroy {
         'Choose your bet and payout, then click the bet button to start the magic spell.',
         'If the magic fails, you lose your bet. If it works, coins will appear in the magic circle and you win!',
       ],
-      image: GAME_ASSETS.images.makingMove,
+      get image() { return window.innerHeight > window.innerWidth && window.innerWidth <= 900 ? GAME_ASSETS.images.makingMoveMobile : GAME_ASSETS.images.makingMove; },
     },
     {
       title: 'Bet Selector',

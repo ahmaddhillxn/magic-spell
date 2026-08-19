@@ -18,6 +18,18 @@ import { GuidenessModal } from '../modals/guideness-modal/guideness-modal';
 import { BetAmount } from '../modals/bet-amount/bet-amount';
 import { AutoplayModal } from '../modals/autoplay-modal/autoplay-modal';
 import { GAME_ASSETS } from '../game-assets';
+import { BetHistoryService } from '../services/history';
+import { Api } from '../services/api';
+
+type ResultAnimationPhase =
+  | 'idle'
+  | 'counting'
+  | 'resultLocked'
+  | 'resultDropping'
+  | 'winPopupEntering'
+  | 'winHolding'
+  | 'winPopupExiting'
+  | 'reset';
 
 @Component({
   selector: 'app-game-wrapper',
@@ -31,6 +43,8 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   readonly assets = GAME_ASSETS;
   readonly toggle = inject(Toggle);
   readonly betAmount = inject(BetAmountService);
+  readonly betHistory = inject(BetHistoryService);
+  readonly api = inject(Api);
   readonly guideOpen = signal(false);
 
   ready = false;
@@ -45,18 +59,39 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   displayAmount = '0.10';
   displayPayout = '2.00x';
   payout = 2;
+  recentMultipliers = [20.59, 1.04, 2.25, 2.06, 5.8, 362.88, 1.34];
+  liveMultiplier = 1;
+  liveMultiplierVisible = false;
+  multiplierTone: 'neutral' | 'win' | 'lose' = 'neutral';
+  winPopupVisible = false;
+  winAmount = 0;
+  roundRunning = false;
+  animationPhase: ResultAnimationPhase = 'idle';
+  prefersReducedMotion = false;
+  multiplierHeadY = '20%';
+  multiplierChestY = '48%';
 
   private app?: Application;
   private scene?: MagicSpellScene;
   private resizeObserver?: ResizeObserver;
+  private roundAnimationFrame: number | null = null;
+  private readonly phaseTimers: ReturnType<typeof setTimeout>[] = [];
+  private fallbackResultIndex = 0;
 
   constructor(private readonly cdr: ChangeDetectorRef) {
     this.displayAmount = this.betAmount.betAmount().toFixed(2);
+    this.prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
   async ngAfterViewInit(): Promise<void> {
     const host = this.spineHost.nativeElement;
-    const isCoarse = window.matchMedia('(pointer: coarse)').matches;
+    const isCoarse =
+      typeof window.matchMedia === 'function'
+        ? window.matchMedia('(pointer: coarse)').matches
+        : false;
     const isIOS =
       /iP(ad|hone|od)/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -96,11 +131,13 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
       this.resizeObserver = new ResizeObserver(() => {
         this.app?.resize();
         this.scene?.layout();
+        this.updateMultiplierAnchors();
       });
       this.resizeObserver.observe(host);
       requestAnimationFrame(() => {
         this.app?.resize();
         this.scene?.layout();
+        this.updateMultiplierAnchors();
       });
       this.cdr.detectChanges();
     } catch (err) {
@@ -169,6 +206,44 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     this.displayPayout = `${this.payout.toFixed(2)}x`;
   }
 
+  get liveMultiplierLabel(): string {
+    return `${this.liveMultiplier.toFixed(2)} x`;
+  }
+
+  get winAmountLabel(): string {
+    return this.winAmount.toFixed(2).replace(/\.?0+$/, '');
+  }
+
+  resultIsWin(multiplier: number): boolean {
+    return multiplier >= this.payout;
+  }
+
+  placeBet(): void {
+    if (this.roundRunning) return;
+    const result = this.resolveRoundResult();
+    this.playResultAnimation(result.multiplier, result.winAmount, 'auto');
+  }
+
+  demoWin(): void {
+    if (this.roundRunning) return;
+    this.updateMultiplierAnchors();
+    const winAmount = +(this.betAmount.betAmount() * this.payout).toFixed(2);
+    this.playResultAnimation(3.79, winAmount, 'win');
+  }
+
+  demoWinBig(): void {
+    if (this.roundRunning) return;
+    this.updateMultiplierAnchors();
+    const winAmount = +(this.betAmount.betAmount() * this.payout).toFixed(2);
+    this.playResultAnimation(20.59, winAmount, 'winBig');
+  }
+
+  demoLose(): void {
+    if (this.roundRunning) return;
+    this.updateMultiplierAnchors();
+    this.playResultAnimation(1.34, 0, 'lose');
+  }
+
   playWizard(name: string): void {
     this.currentWizardAnim = name;
     this.scene?.playWizard(name, this.loop);
@@ -193,6 +268,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.clearRoundTimers();
     this.resizeObserver?.disconnect();
     this.resizeObserver = undefined;
     this.scene?.destroy();
@@ -201,5 +277,225 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
       this.app.destroy(true, { children: true });
       this.app = undefined;
     }
+  }
+
+  private clearRoundTimers(): void {
+    if (this.roundAnimationFrame !== null) {
+      cancelAnimationFrame(this.roundAnimationFrame);
+      this.roundAnimationFrame = null;
+    }
+    for (const timer of this.phaseTimers) {
+      clearTimeout(timer);
+    }
+    this.phaseTimers.length = 0;
+  }
+
+  private playResultAnimation(
+    targetMultiplier: number,
+    computedWinAmount: number,
+    mode: 'auto' | 'win' | 'winBig' | 'lose' = 'auto',
+  ): void {
+    this.updateMultiplierAnchors();
+    const betAmount = this.betAmount.betAmount();
+    const didWin =
+      mode === 'win' || mode === 'winBig' || (mode === 'auto' && targetMultiplier >= this.payout);
+    const winAmount = didWin ? computedWinAmount : 0;
+    const countingMs = this.prefersReducedMotion ? 120 : 600;
+    const dropMs = this.prefersReducedMotion ? 120 : 380;
+    const popupEnterMs = this.prefersReducedMotion ? 120 : 290;
+    const holdMs = this.prefersReducedMotion ? 240 : 1100;
+    const popupExitMs = this.prefersReducedMotion ? 120 : 280;
+    const multiplierExitMs = this.prefersReducedMotion ? 90 : 140;
+
+    this.clearRoundTimers();
+    this.roundRunning = true;
+    this.liveMultiplierVisible = true;
+    this.winPopupVisible = false;
+    this.liveMultiplier = 1;
+    this.multiplierTone = 'neutral';
+    this.animationPhase = 'counting';
+    if (mode === 'winBig') this.scene?.playBigWin(() => this.unlockBetAfterSpine());
+    else if (didWin) this.scene?.playWin(() => this.unlockBetAfterSpine());
+    else this.scene?.playLose(() => this.unlockBetAfterSpine());
+    this.cdr.detectChanges();
+
+    const startedAt = performance.now();
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - startedAt) / countingMs);
+      const eased = 1 - Math.pow(1 - progress, 2.7);
+      this.liveMultiplier = 1 + (targetMultiplier - 1) * eased;
+      this.cdr.detectChanges();
+      if (progress < 1) {
+        this.roundAnimationFrame = requestAnimationFrame(tick);
+        return;
+      }
+
+      this.roundAnimationFrame = null;
+      this.liveMultiplier = targetMultiplier;
+      this.multiplierTone = 'neutral';
+      this.animationPhase = 'resultLocked';
+      this.recentMultipliers = [targetMultiplier, ...this.recentMultipliers].slice(0, 7);
+      this.betHistory.emitSpinResult({
+        id: crypto.randomUUID(),
+        time: new Date(),
+        betAmount,
+        multiplier: targetMultiplier,
+        winAmount,
+        win: didWin,
+        payout: this.payout,
+      });
+      this.cdr.detectChanges();
+
+      this.queuePhase(() => {
+        this.animationPhase = 'resultDropping';
+        this.cdr.detectChanges();
+      }, this.prefersReducedMotion ? 60 : 90);
+
+      this.queuePhase(() => {
+        // User-requested order:
+        // white counting -> white drop -> then final green/red lock
+        this.multiplierTone = didWin ? 'win' : 'lose';
+        this.animationPhase = 'resultLocked';
+        this.cdr.detectChanges();
+      }, (this.prefersReducedMotion ? 60 : 90) + dropMs);
+
+      if (!didWin) {
+        this.queuePhase(
+          () => this.resetResultLayer(),
+          (this.prefersReducedMotion ? 60 : 90) + dropMs + (this.prefersReducedMotion ? 160 : 320),
+        );
+        return;
+      }
+
+      this.queuePhase(
+        () => {
+          this.winAmount = winAmount;
+          this.winPopupVisible = true;
+          this.animationPhase = 'winPopupEntering';
+          this.cdr.detectChanges();
+        },
+        (this.prefersReducedMotion ? 60 : 90) + dropMs + (this.prefersReducedMotion ? 40 : 60),
+      );
+
+      this.queuePhase(
+        () => {
+          this.animationPhase = 'winHolding';
+          this.cdr.detectChanges();
+        },
+        (this.prefersReducedMotion ? 60 : 90) +
+          dropMs +
+          (this.prefersReducedMotion ? 40 : 60) +
+          popupEnterMs,
+      );
+
+      this.queuePhase(
+        () => {
+          this.animationPhase = 'winPopupExiting';
+          this.cdr.detectChanges();
+        },
+        (this.prefersReducedMotion ? 60 : 90) +
+          dropMs +
+          (this.prefersReducedMotion ? 40 : 60) +
+          popupEnterMs +
+          holdMs,
+      );
+
+      this.queuePhase(
+        () => this.resetResultLayer(),
+        (this.prefersReducedMotion ? 60 : 90) +
+          dropMs +
+          (this.prefersReducedMotion ? 40 : 60) +
+          popupEnterMs +
+          holdMs +
+          popupExitMs +
+          multiplierExitMs,
+      );
+    };
+
+    this.roundAnimationFrame = requestAnimationFrame(tick);
+  }
+
+  private resolveRoundResult(): { multiplier: number; winAmount: number } {
+    const fromApi = this.extractResultFromUnknown(this.api.getApiResult());
+    if (fromApi) return fromApi;
+
+    // Fallback only when no backend/current-round result is available in project state.
+    const fallbackMultipliers = [1.04, 1.34, 1.66, 2.06, 2.25, 5.8, 12.32, 20.59, 36.88];
+    const multiplier = fallbackMultipliers[this.fallbackResultIndex % fallbackMultipliers.length] ?? 2.06;
+    this.fallbackResultIndex += 1;
+    const winAmount = +(this.betAmount.betAmount() * this.payout).toFixed(2);
+    return { multiplier, winAmount };
+  }
+
+  private extractResultFromUnknown(source: unknown): { multiplier: number; winAmount: number } | null {
+    if (!source || typeof source !== 'object') return null;
+    const candidate = source as Record<string, unknown>;
+    const multiplier = this.readNumberCandidate(candidate, [
+      'multiplier',
+      'resultMultiplier',
+      'targetMultiplier',
+      'payoutMultiplier',
+      'winMultiplier',
+    ]);
+    if (multiplier === null || multiplier <= 0) return null;
+
+    const winAmount =
+      this.readNumberCandidate(candidate, ['winAmount', 'cashoutAmount', 'payoutAmount']) ??
+      +(this.betAmount.betAmount() * this.payout).toFixed(2);
+    return { multiplier, winAmount };
+  }
+
+  private readNumberCandidate(
+    source: Record<string, unknown>,
+    keys: string[],
+    depth = 0,
+  ): number | null {
+    if (depth > 3) return null;
+    for (const key of keys) {
+      const value = source[key];
+      if (typeof value === 'number' && Number.isFinite(value)) return value;
+      if (typeof value === 'string') {
+        const parsed = Number(value);
+        if (Number.isFinite(parsed)) return parsed;
+      }
+    }
+
+    for (const value of Object.values(source)) {
+      if (!value || typeof value !== 'object') continue;
+      const nested = this.readNumberCandidate(value as Record<string, unknown>, keys, depth + 1);
+      if (nested !== null) return nested;
+    }
+    return null;
+  }
+
+  private queuePhase(action: () => void, delayMs: number): void {
+    const timer = setTimeout(action, Math.max(0, delayMs));
+    this.phaseTimers.push(timer);
+  }
+
+  private updateMultiplierAnchors(): void {
+    const host = this.spineHost?.nativeElement;
+    if (!host || !this.scene) return;
+    const { headY, chestY } = this.scene.getWizardAnchorPercents(host.clientHeight);
+    this.multiplierHeadY = `${headY.toFixed(2)}%`;
+    this.multiplierChestY = `${chestY.toFixed(2)}%`;
+  }
+
+  private resetResultLayer(): void {
+    this.animationPhase = 'reset';
+    this.winPopupVisible = false;
+    this.queuePhase(() => {
+      this.liveMultiplierVisible = false;
+      this.multiplierTone = 'neutral';
+      this.animationPhase = 'idle';
+      this.cdr.detectChanges();
+    }, this.prefersReducedMotion ? 50 : 120);
+    this.cdr.detectChanges();
+  }
+
+  private unlockBetAfterSpine(): void {
+    this.scene?.resumeIdle();
+    this.roundRunning = false;
+    this.cdr.detectChanges();
   }
 }
