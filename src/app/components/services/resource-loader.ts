@@ -143,12 +143,18 @@ export class ResourceLoaderService {
 
   playSound(url: string, volume = 0.7) {
     const sound = this.get<HTMLAudioElement>(url);
-    if (!sound) return;
+    if (sound) {
+      // clone -> allow multiple plays at once
+      const clone = sound.cloneNode() as HTMLAudioElement;
+      clone.volume = volume;
+      clone.play().catch((e) => console.warn('Sound play failed', e));
+      return;
+    }
 
-    // clone → allow multiple plays at once
-    const clone = sound.cloneNode() as HTMLAudioElement;
-    clone.volume = volume;
-    clone.play().catch((e) => console.warn("Sound play failed", e));
+    // Fallback when audio was not pre-cached
+    const fallback = new Audio(url);
+    fallback.volume = volume;
+    fallback.play().catch((e) => console.warn('Sound play failed', e));
   }
 
   clear() {

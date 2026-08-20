@@ -11,6 +11,7 @@ import {
 import { Toggle } from '../../services/toggle';
 import { GAME_ASSETS } from '../../game-assets';
 import { BetAmountService } from '../../services/bet-amount-service';
+import { ModalVisibilityController } from '../../services/modal-visibility';
 
 type IntroStep = {
   target: string;
@@ -34,9 +35,6 @@ export interface GuideSlide {
   imports: [],
   templateUrl: './guideness-modal.html',
   styleUrl: './guideness-modal.css',
-  host: {
-    class: 'is-open',
-  },
 })
 export class GuidenessModal implements OnDestroy {
   @Output() closed = new EventEmitter<void>();
@@ -44,7 +42,9 @@ export class GuidenessModal implements OnDestroy {
   readonly betSlipToggle = inject(Toggle);
   private readonly betAmount = inject(BetAmountService);
   private readonly cdr = inject(ChangeDetectorRef);
+  readonly visibility = new ModalVisibilityController(500);
   private ignoreCloseUntil = 0;
+  private closeTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly stepAmounts = [0.7, 1.75, 6, 12.5, 40] as const;
   demoAmount = 0.1;
@@ -147,19 +147,35 @@ export class GuidenessModal implements OnDestroy {
   constructor() {
     this.ignoreCloseUntil = Date.now() + 400;
     this.currentSlide = 0;
+    this.visibility.sync(true);
   }
 
   ngOnDestroy(): void {
     this.stopBetIntro();
     this.teardownVpRem();
+    this.visibility.destroy();
+    if (this.closeTimer !== null) {
+      clearTimeout(this.closeTimer);
+      this.closeTimer = null;
+    }
   }
 
   close(): void {
     if (Date.now() < this.ignoreCloseUntil) return;
+    if (!this.visibility.active()) return;
     this.stopBetIntro();
     this.teardownVpRem();
-    this.closed.emit();
-    this.betSlipToggle.closeGameGuide();
+    this.visibility.sync(false);
+    this.closeTimer = setTimeout(() => {
+      this.closed.emit();
+      this.betSlipToggle.closeGameGuide();
+      this.closeTimer = null;
+    }, 500);
+  }
+
+  onBackdropClick(event: Event): void {
+    event.stopPropagation();
+    this.close();
   }
 
   goNext(): void {

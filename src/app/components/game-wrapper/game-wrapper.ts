@@ -20,6 +20,7 @@ import { AutoplayModal } from '../modals/autoplay-modal/autoplay-modal';
 import { GAME_ASSETS } from '../game-assets';
 import { BetHistoryService } from '../services/history';
 import { Api } from '../services/api';
+import { ResourceLoaderService } from '../services/resource-loader';
 
 type ResultAnimationPhase =
   | 'idle'
@@ -45,6 +46,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   readonly betAmount = inject(BetAmountService);
   readonly betHistory = inject(BetHistoryService);
   readonly api = inject(Api);
+  readonly loader = inject(ResourceLoaderService);
   readonly guideOpen = signal(false);
 
   ready = false;
@@ -78,6 +80,8 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   private roundAnimationFrame: number | null = null;
   private readonly phaseTimers: ReturnType<typeof setTimeout>[] = [];
   private fallbackResultIndex = 0;
+  private bgAudio: HTMLAudioElement | null = null;
+  private userInteracted = false;
 
   constructor(private readonly cdr: ChangeDetectorRef) {
     this.displayAmount = this.betAmount.betAmount().toFixed(2);
@@ -150,6 +154,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
+    this.markInteraction();
     const target = event.target as HTMLElement | null;
     if (target?.closest('.menu-root')) return;
     if (target?.closest('app-bet-history-modal, app-guideness-modal')) return;
@@ -180,6 +185,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   }
 
   openBetAmount(): void {
+    this.playButtonSound();
     this.betAmount.open();
   }
 
@@ -188,11 +194,18 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   }
 
   toggleSound(): void {
+    this.markInteraction();
     this.toggle.markGameInteraction();
     this.toggle.toggleMusicTrigger();
+    if (this.toggle.isSoundOn()) {
+      this.startBackgroundSound();
+      return;
+    }
+    this.stopBackgroundSound();
   }
 
   adjustAmount(delta: number): void {
+    this.playButtonSound();
     const settings = this.betAmount.getStakeSettings(this.toggle.currency());
     const next = Math.min(
       settings.maxBet,
@@ -203,6 +216,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   }
 
   adjustPayout(delta: number): void {
+    this.playButtonSound();
     this.payout = Math.min(100, Math.max(1.01, +(this.payout + delta).toFixed(2)));
     this.displayPayout = `${this.payout.toFixed(2)}x`;
   }
@@ -221,6 +235,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
 
   placeBet(): void {
     if (this.roundRunning) return;
+    this.playSecondButtonSound();
     const result = this.resolveRoundResult();
     this.playResultAnimation(result.multiplier, result.winAmount, 'auto');
   }
@@ -278,6 +293,8 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
       this.app.destroy(true, { children: true });
       this.app = undefined;
     }
+    this.stopBackgroundSound();
+    this.bgAudio = null;
   }
 
   private clearRoundTimers(): void {
@@ -300,6 +317,8 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     const betAmount = this.betAmount.betAmount();
     const didWin =
       mode === 'win' || mode === 'winBig' || (mode === 'auto' && targetMultiplier >= this.payout);
+    if (didWin) this.playWinSound();
+    else this.playLoseSound();
     const winAmount = didWin ? computedWinAmount : 0;
     const countingMs = this.prefersReducedMotion ? 120 : 600;
     const dropMs = this.prefersReducedMotion ? 120 : 2000;
@@ -499,5 +518,50 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     this.scene?.resumeIdle();
     this.roundRunning = false;
     this.cdr.detectChanges();
+  }
+
+  private markInteraction(): void {
+    if (this.userInteracted) return;
+    this.userInteracted = true;
+    this.startBackgroundSound();
+  }
+
+  private playButtonSound(): void {
+    if (!this.toggle.isSoundOn()) return;
+    this.loader.playSound(GAME_ASSETS.sounds.click, 0.8);
+  }
+
+  private playSecondButtonSound(): void {
+    if (!this.toggle.isSoundOn()) return;
+    this.loader.playSound(GAME_ASSETS.sounds.secondClick, 0.85);
+  }
+
+  private playWinSound(): void {
+    if (!this.toggle.isSoundOn()) return;
+    this.loader.playSound(GAME_ASSETS.sounds.win, 0.9);
+  }
+
+  private playLoseSound(): void {
+    if (!this.toggle.isSoundOn()) return;
+    this.loader.playSound(GAME_ASSETS.sounds.lose, 0.9);
+  }
+
+  private startBackgroundSound(): void {
+    if (!this.toggle.isSoundOn() || !this.userInteracted) return;
+    if (!this.bgAudio) {
+      this.bgAudio = new Audio(GAME_ASSETS.sounds.bg);
+      this.bgAudio.loop = true;
+      this.bgAudio.volume = 0.35;
+    }
+    if (!this.bgAudio.paused) return;
+    this.bgAudio.play().catch(() => {
+      // Browser may block autoplay until stronger user gesture.
+    });
+  }
+
+  private stopBackgroundSound(): void {
+    if (!this.bgAudio) return;
+    this.bgAudio.pause();
+    this.bgAudio.currentTime = 0;
   }
 }

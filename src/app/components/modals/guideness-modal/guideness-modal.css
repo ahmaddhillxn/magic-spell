@@ -6716,6 +6716,18 @@ img {
   display: flex;
   position: fixed;
   inset: 0px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.vim--modal.show {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.vim--modal.hide {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .vim--modal__backdrop {
@@ -6724,6 +6736,12 @@ img {
   height: 100%;
   position: fixed;
   inset: 0px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.vim--modal__backdrop.active {
+  opacity: 1;
 }
 
 .vim--modal__anim-wrap--open {
@@ -9162,15 +9180,12 @@ html[dir='rtl'] {
 
 :host .vim--modal,
 :host .vim--modal.vim--modal--open {
-  visibility: visible !important;
-  pointer-events: auto !important;
-  opacity: 1 !important;
-  z-index: 1 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  position: fixed !important;
-  inset: 0 !important;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  inset: 0;
   width: 100%;
   height: 100%;
   margin: 0 auto;
@@ -9179,19 +9194,17 @@ html[dir='rtl'] {
 }
 
 :host .vim--modal__inner {
-  width: 95vw !important;
-  max-width: var(--modal-width, 44.8rem) !important;
+  width: 95vw;
+  max-width: var(--modal-width, 44.8rem);
   margin: 0 auto;
   box-sizing: border-box;
 }
 
 .vim--modal__anim-wrap,
 .vim--modal__anim-wrap--open {
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .vim--modal__anim-wrap > .animation-wrapper {

@@ -1,10 +1,22 @@
-<div class="vim--modal vim--modal--open">
+<div
+  class="vim--modal"
+  [class.vim--modal--open]="visibility.active()"
+  [class.show]="visibility.visible()"
+  [class.hide]="!visibility.visible()"
+>
   <div
     class="vim--modal__backdrop"
-    (click)="$event.stopPropagation(); close()"
+    [class.active]="visibility.active()"
+    (click)="onBackdropClick($event)"
   ></div>
-  <div class="vim--modal__anim-wrap vim--modal__anim-wrap--open">
-    <div class="animation-wrapper">
+  <div
+    class="vim--modal__anim-wrap"
+    [class.vim--modal__anim-wrap--open]="visibility.active()"
+  >
+    <div
+      class="animation-wrapper fade-blur"
+      [class.active]="visibility.active()"
+    >
       <div
         class="vim--modal__inner vim--modal__inner--open"
         style="
