@@ -144,10 +144,12 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
         this.scene?.layout();
         this.updateMultiplierAnchors();
       });
+      this.loader.markSceneReady();
       this.cdr.detectChanges();
     } catch (err) {
       console.error('[GameWrapper] spine init failed', err);
       this.error = err instanceof Error ? err.message : 'Failed to load spine';
+      this.loader.markSceneReady();
       this.cdr.detectChanges();
     }
   }

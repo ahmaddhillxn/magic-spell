@@ -5308,18 +5308,37 @@ img {
 .bet-history {
   flex-direction: column;
   flex-grow: 1;
+  min-height: 0;
   display: flex;
   overflow: hidden;
 }
 
+.bet-history .title-wrapper.main-titles {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+}
+
 .bet-history .wrapper-items {
   flex-direction: column;
-  flex-grow: 1;
+  flex: 1 1 0;
+  min-height: 0;
   gap: 0.5rem;
-  padding-bottom: 1.6rem;
+  padding-bottom: 3.5rem;
   padding-right: 0.4rem;
   display: flex;
+  overflow-x: hidden;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.bet-history .wrapper-items > .item-wrap:last-child {
+  margin-bottom: 1.2rem;
+}
+
+.bet-history .wrapper-items > .item-wrap {
+  flex: 0 0 auto;
+  flex-shrink: 0;
 }
 
 .bet-history .wrapper-items::-webkit-scrollbar {
@@ -7910,6 +7929,8 @@ html[dir='rtl'] {
   flex-direction: column;
   width: 100%;
   flex-grow: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .hvRfuF .item-wrap {
@@ -8882,6 +8903,8 @@ html[dir='rtl'] {
 /* ===== Bet History inner list only — keep original modal header ===== */
 :host .bet-history .title-wrapper.main-titles {
   padding: 0.4rem 0 0.2rem !important;
+  flex: 0 0 auto !important;
+  flex-shrink: 0 !important;
 }
 
 :host .bet-history .title-wrapper.main-titles .titles {
@@ -8907,17 +8930,32 @@ html[dir='rtl'] {
   overflow: hidden;
 }
 
+:host .vim--modal__body {
+  padding-bottom: 1.6rem !important;
+}
+
 :host .bet-history .wrapper-items {
   flex: 1 1 0 !important;
   min-height: 0 !important;
+  max-height: none !important;
   gap: 0 !important;
   padding-right: 0.4rem !important;
-  padding-bottom: 1.2rem !important;
+  padding-bottom: 4.5rem !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   touch-action: pan-y;
+}
+
+:host .bet-history .wrapper-items > .item-wrap:last-child {
+  margin-bottom: 1.6rem !important;
+}
+
+:host .bet-history .wrapper-items > .item-wrap {
+  flex: 0 0 auto !important;
+  flex-shrink: 0 !important;
+  min-height: auto !important;
 }
 
 :host .bet-history .wrapper-items::-webkit-scrollbar {
@@ -9104,7 +9142,7 @@ html[dir='rtl'] {
 
   :host .bet-history .wrapper-items {
     gap: 0.8rem !important;
-    padding: 0.4rem 0.15rem 1rem !important;
+    padding: 0.4rem 0.15rem 4.5rem !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
   }

@@ -1,1 +1,5 @@
-<app-game-wrapper></app-game-wrapper>
+<app-game-wrapper />
+
+@if (!loader.isLoaded()) {
+  <app-loading />
+}
