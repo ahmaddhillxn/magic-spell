@@ -8010,8 +8010,7 @@ html[dir='rtl'] {
   pointer-events: none;
   --ms-head-y: 14%;
   --ms-chest-y: 48%;
-  --ms-popup-enter-ms: 380ms;
-  --ms-popup-exit-ms: 650ms;
+  --ms-popup-cycle-ms: 2000ms;
   --ms-drop-ms: 380ms;
   --ms-result-drop-ms: 2s;
   --ms-drop-y: 16rem;
@@ -8121,6 +8120,46 @@ html[dir='rtl'] {
   will-change: transform, opacity;
 }
 
+.ms-win-popup--playing {
+  animation: ms-win-popup-cycle var(--ms-popup-cycle-ms) ease-in-out forwards;
+}
+
+@keyframes ms-win-popup-cycle {
+  0% {
+    transform: translate3d(-50%, 0, 0) scale(0);
+    opacity: 0;
+  }
+  18% {
+    transform: translate3d(-50%, 0, 0) scale(1);
+    opacity: 1;
+  }
+  38% {
+    transform: translate3d(-50%, 0, 0) scale(0.72);
+    opacity: 1;
+  }
+  58% {
+    transform: translate3d(-50%, 0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0) scale(0);
+    opacity: 0;
+  }
+}
+
+.ms-live-multiplier--win.ms-live-multiplier--win-popup-fade {
+  animation: ms-multiplier-fade-out calc(var(--ms-popup-cycle-ms) * 0.28) ease-in forwards;
+}
+
+@keyframes ms-multiplier-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 .ms-win-popup--enter {
   animation: ms-win-popup-enter var(--ms-popup-enter-ms) cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
@@ -8187,6 +8226,10 @@ html[dir='rtl'] {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .ms-round-overlay {
+    --ms-popup-cycle-ms: 420ms;
+  }
+
   .ms-live-multiplier,
   .ms-win-popup {
     transition-duration: 120ms !important;

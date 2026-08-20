@@ -14,8 +14,7 @@
             @if (winPopupVisible) {
               <div
                 class="ms-win-popup"
-                [class.ms-win-popup--enter]="animationPhase === 'winPopupEntering' || animationPhase === 'winHolding'"
-                [class.ms-win-popup--exit]="animationPhase === 'winPopupExiting' || animationPhase === 'reset'"
+                [class.ms-win-popup--playing]="winPopupVisible"
               >
                 <div class="ms-win-popup__title">You Win</div>
                 <div class="ms-win-popup__amount">{{ winAmountLabel }}</div>
@@ -26,8 +25,9 @@
                 class="ms-live-multiplier"
                 [class.ms-live-multiplier--win]="multiplierTone === 'win'"
                 [class.ms-live-multiplier--lose]="multiplierTone === 'lose'"
-                [class.ms-live-multiplier--dropping]="animationPhase === 'resultDropping' || animationPhase === 'winPopupEntering' || animationPhase === 'winHolding' || animationPhase === 'winPopupExiting'"
-                [class.ms-live-multiplier--locked]="animationPhase === 'resultLocked'"
+                [class.ms-live-multiplier--dropping]="animationPhase === 'resultDropping'"
+                [class.ms-live-multiplier--locked]="isMultiplierAtChest"
+                [class.ms-live-multiplier--win-popup-fade]="animationPhase === 'winPopupPlaying'"
                 [class.ms-live-multiplier--exit]="animationPhase === 'reset'"
               >
                 {{ liveMultiplierLabel }}
@@ -218,6 +218,7 @@
                     [class.gIPpIY]="!roundRunning"
                     [class.iYgYIR]="roundRunning"
                     type="button"
+                    [disabled]="roundRunning"
                     (click)="placeBet()"
                   >
                     Bet

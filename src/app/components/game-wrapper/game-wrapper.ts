@@ -27,9 +27,7 @@ type ResultAnimationPhase =
   | 'counting'
   | 'resultLocked'
   | 'resultDropping'
-  | 'winPopupEntering'
-  | 'winHolding'
-  | 'winPopupExiting'
+  | 'winPopupPlaying'
   | 'reset';
 
 @Component({
@@ -227,6 +225,10 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     return `${this.liveMultiplier.toFixed(2)} x`;
   }
 
+  get isMultiplierAtChest(): boolean {
+    return this.animationPhase === 'resultLocked' || this.animationPhase === 'winPopupPlaying';
+  }
+
   get winAmountLabel(): string {
     return this.winAmount.toFixed(2).replace(/\.?0+$/, '');
   }
@@ -324,10 +326,10 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     const winAmount = didWin ? computedWinAmount : 0;
     const countingMs = this.prefersReducedMotion ? 120 : 600;
     const dropMs = this.prefersReducedMotion ? 120 : 2000;
-    const popupEnterMs = this.prefersReducedMotion ? 120 : 380;
-    const holdMs = this.prefersReducedMotion ? 240 : 1100;
-    const popupExitMs = this.prefersReducedMotion ? 120 : 650;
-    const multiplierExitMs = this.prefersReducedMotion ? 90 : 140;
+    const dropDelayMs = this.prefersReducedMotion ? 60 : 90;
+    const popupCycleMs = this.prefersReducedMotion ? 420 : 2000;
+    const dropEndMs = dropDelayMs + dropMs;
+    const popupStartMs = dropDelayMs + Math.round(dropMs * 0.25);
 
     this.clearRoundTimers();
     this.roundRunning = true;
@@ -375,64 +377,32 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
         this.animationPhase = 'resultDropping';
         this.multiplierTone = didWin ? 'win' : 'lose';
         this.cdr.detectChanges();
-      }, this.prefersReducedMotion ? 60 : 90);
+      }, dropDelayMs);
 
-      this.queuePhase(() => {
-        this.animationPhase = 'resultLocked';
-        this.cdr.detectChanges();
-      }, (this.prefersReducedMotion ? 60 : 90) + dropMs);
-
-      if (!didWin) {
-        this.queuePhase(
-          () => this.resetResultLayer(),
-          (this.prefersReducedMotion ? 60 : 90) + dropMs + (this.prefersReducedMotion ? 160 : 320),
-        );
-        return;
-      }
-
-      this.queuePhase(
-        () => {
+      if (didWin) {
+        this.queuePhase(() => {
           this.winAmount = winAmount;
           this.winPopupVisible = true;
-          this.animationPhase = 'winPopupEntering';
           this.cdr.detectChanges();
-        },
-        (this.prefersReducedMotion ? 60 : 90) + dropMs + (this.prefersReducedMotion ? 40 : 60),
-      );
+        }, popupStartMs);
 
-      this.queuePhase(
-        () => {
-          this.animationPhase = 'winHolding';
+        this.queuePhase(() => {
+          this.animationPhase = 'winPopupPlaying';
           this.cdr.detectChanges();
-        },
-        (this.prefersReducedMotion ? 60 : 90) +
-          dropMs +
-          (this.prefersReducedMotion ? 40 : 60) +
-          popupEnterMs,
-      );
+        }, dropEndMs);
 
-      this.queuePhase(
-        () => {
-          this.animationPhase = 'winPopupExiting';
+        this.queuePhase(() => this.finishWinRound(), popupStartMs + popupCycleMs);
+      } else {
+        this.queuePhase(() => {
+          this.animationPhase = 'resultLocked';
           this.cdr.detectChanges();
-        },
-        (this.prefersReducedMotion ? 60 : 90) +
-          dropMs +
-          (this.prefersReducedMotion ? 40 : 60) +
-          popupEnterMs +
-          holdMs,
-      );
+        }, dropEndMs);
 
-      this.queuePhase(
-        () => this.resetResultLayer(),
-        (this.prefersReducedMotion ? 60 : 90) +
-          dropMs +
-          (this.prefersReducedMotion ? 40 : 60) +
-          popupEnterMs +
-          holdMs +
-          popupExitMs +
-          multiplierExitMs,
-      );
+        this.queuePhase(
+          () => this.resetResultLayer(),
+          dropEndMs + (this.prefersReducedMotion ? 160 : 320),
+        );
+      }
     };
 
     this.roundAnimationFrame = requestAnimationFrame(tick);
@@ -511,14 +481,23 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
       this.liveMultiplierVisible = false;
       this.multiplierTone = 'neutral';
       this.animationPhase = 'idle';
+      this.roundRunning = false;
       this.cdr.detectChanges();
     }, this.prefersReducedMotion ? 50 : 120);
     this.cdr.detectChanges();
   }
 
+  private finishWinRound(): void {
+    this.winPopupVisible = false;
+    this.liveMultiplierVisible = false;
+    this.multiplierTone = 'neutral';
+    this.animationPhase = 'idle';
+    this.roundRunning = false;
+    this.cdr.detectChanges();
+  }
+
   private unlockBetAfterSpine(): void {
     this.scene?.resumeIdle();
-    this.roundRunning = false;
     this.cdr.detectChanges();
   }
 
