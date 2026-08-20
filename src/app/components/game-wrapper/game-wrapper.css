@@ -8500,6 +8500,9 @@ html[dir='rtl'] {
 }
 
 @media (orientation: portrait) and (max-width: 900px) {
+  .ms-win-popup {
+    top: 10rem !important;
+  }
   .ms-history-chip__value {
     font-size: 0.93rem !important;
   }
