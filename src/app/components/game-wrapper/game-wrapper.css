@@ -8380,7 +8380,8 @@ html[dir='rtl'] {
 @media (orientation: portrait) and (max-width: 900px) {
   .bIPPyc {
     border-width: 0.1rem;
-    width: 100vw;
+    width: calc(100% + 4px);
+    max-width: calc(100% + 4px);
     position: absolute;
     bottom: -3.6rem;
     left: 50%;
@@ -8455,20 +8456,56 @@ html[dir='rtl'] {
 @media (orientation: portrait) and (max-width: 900px) {
   .eKrAkB {
     gap: 0.48rem;
+    align-items: center;
   }
 
   .ms-history-chip {
     height: 2rem;
     border-radius: 0.64rem;
-    padding: 0 0.2rem;
+    padding: 0;
+    display: grid;
+    place-items: center;
   }
 
-  .ms-history-chip__value {
-    font-size: 1.2rem;
+  .ms-history-chip__value,
+  .ms-history-chip__value--long {
+    position: static;
+    inset: auto;
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    font-size: 0.93rem !important;
+    line-height: 1;
+    text-align: center;
+    /* digits sit high optically in Rubik — nudge down to true center */
+    transform: translateY(0.12em);
   }
 
   .ms-history-chip__value--long {
-    font-size: clamp(0.6rem, 30cqi, 0.9rem);
+    font-size: 0.72rem !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .ms-history-chip__value {
+    font-size: clamp(0.62rem, 36cqi, 0.92rem);
+  }
+
+  .ms-history-chip__value--long {
+    font-size: clamp(0.5rem, 28cqi, 0.78rem);
+  }
+}
+
+@media (orientation: portrait) and (max-width: 900px) {
+  .ms-history-chip__value {
+    font-size: 0.93rem !important;
+  }
+
+  .ms-history-chip__value--long {
+    font-size: 0.72rem !important;
   }
 }
 
@@ -9455,6 +9492,37 @@ html[dir='rtl'] {
 :host-context(html.is-portrait) .ms-round-overlay {
   --ms-head-y: 11%;
   --ms-chest-y: 42%;
+}
+
+:host-context(html.is-portrait) .ms-history-chip {
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
+:host-context(html.is-portrait) .ms-history-chip__value,
+:host-context(html.is-portrait) .ms-history-chip__value--long {
+  position: static;
+  inset: auto;
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  font-size: 0.93rem !important;
+  line-height: 1;
+  text-align: center;
+  transform: translateY(0.12em);
+}
+
+:host-context(html.is-portrait) .ms-history-chip__value--long {
+  font-size: 0.72rem !important;
+}
+
+:host-context(html.is-portrait) .bIPPyc {
+  width: calc(100% + 4px);
+  max-width: calc(100% + 4px);
 }
 
 /* —— Spine animation debug controller —— */
