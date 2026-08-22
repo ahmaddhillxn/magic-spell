@@ -55,6 +55,9 @@ export class SoundScene {
    * Bet button — second click SFX only (spine starts in {@link startRoundSpine}).
    */
   playBetClick(): void {
+    this.loader.unlockAudio();
+    this.loader.primeSound(GAME_ASSETS.sounds.win);
+    this.loader.primeSound(GAME_ASSETS.sounds.lose);
     this.playUiSound(
       GAME_ASSETS.sounds.secondClick,
       this.sfxButtonVolume,
@@ -81,11 +84,9 @@ export class SoundScene {
    */
   playRoundResult(didWin: boolean): void {
     this.stopSpineSound();
-    if (didWin) {
-      this.playResultSound(GAME_ASSETS.sounds.win);
-      return;
-    }
-    this.playResultSound(GAME_ASSETS.sounds.lose);
+    const url = didWin ? GAME_ASSETS.sounds.win : GAME_ASSETS.sounds.lose;
+    // Brief gap so looping spine releases the audio session before win/lose.
+    window.setTimeout(() => this.playResultSound(url), 50);
   }
 
   cancelPendingRoundSounds(): void {
@@ -195,6 +196,11 @@ export class SoundScene {
   private playResultSound(url: string): void {
     if (!this.isSoundOn() || !this.isTabAudible()) return;
     this.duckBackground(this.resultDuckMs);
+
+    if (this.loader.playDecodedSound(url, this.sfxResultVolume)) {
+      return;
+    }
+
     this.loader.playSound(url, this.sfxResultVolume);
   }
 

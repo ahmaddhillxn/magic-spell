@@ -154,7 +154,7 @@ export class ResourceLoaderService {
     await Promise.all(promises);
     this.warmSoundPools();
     const preloadUrls = this.urls.filter((url) =>
-      /secondLevelButtonsSound|spine\.mp3$/i.test(url),
+      /secondLevelButtonsSound|spine\.mp3|\/win\.mp3|\/lose\.mp3$/i.test(url),
     );
     await Promise.all(preloadUrls.map((url) => this.preloadBuffer(url)));
   }
@@ -203,10 +203,10 @@ export class ResourceLoaderService {
   }
 
   unlockAudio(): void {
+    void this.ensureAudioContext()?.resume();
     if (this.audioUnlocked) return;
     this.audioUnlocked = true;
     this.warmSoundPools();
-    void this.ensureAudioContext()?.resume();
     // iOS/Safari: play each pool once (muted) inside the user gesture to unlock playback.
     for (const pool of this.soundPools.values()) {
       const audio =
@@ -243,6 +243,42 @@ export class ResourceLoaderService {
     audio.setAttribute('playsinline', 'true');
     audio.setAttribute('webkit-playsinline', 'true');
     return audio;
+  }
+
+  /**
+   * iOS/Safari: mute-play during user gesture so delayed HTMLAudio playback works later.
+   */
+  primeSound(url: string): void {
+    const pool = this.getSoundPool(url);
+    const audio =
+      pool.find((item) => item.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) ?? pool[0];
+    if (!audio) return;
+
+    const savedVolume = audio.volume;
+    audio.volume = 0;
+    void audio
+      .play()
+      .then(() => {
+        audio.pause();
+        try {
+          audio.currentTime = 0;
+        } catch {
+          // Ignore seek errors.
+        }
+        audio.volume = savedVolume;
+      })
+      .catch(() => {
+        audio.volume = savedVolume;
+      });
+  }
+
+  /** Web Audio playback — reliable for async/delayed SFX on mobile after unlock. */
+  playDecodedSound(url: string, volume = 1): boolean {
+    if (!this.tabAudible) return false;
+    void this.ensureAudioContext()?.resume();
+    if (this.playBufferedSound(url, volume, 1)) return true;
+    void this.preloadBuffer(url);
+    return false;
   }
 
   playSound(url: string, volume = 0.7, gain = 1): void {
