@@ -1,4 +1,4 @@
-<app-game-wrapper />
+<app-game-wrapper [class.is-game-ready]="loader.isLoaded()" />
 
 @if (!loader.isLoaded()) {
   <app-loading />

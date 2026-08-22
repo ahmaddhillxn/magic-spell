@@ -8936,6 +8936,8 @@ html[dir='rtl'] {
   appearance: none;
   margin: 0px;
   outline: none;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
 }
 
 @media (orientation: portrait) and (max-width: 900px) {
@@ -9049,6 +9051,8 @@ html[dir='rtl'] {
   background: none;
   appearance: none;
   margin: 0px;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
 }
 
 @media (orientation: portrait) and (max-width: 900px) {
@@ -9495,6 +9499,40 @@ html[dir='rtl'] {
 :host-context(html.is-portrait) .ms-round-overlay {
   --ms-head-y: 11%;
   --ms-chest-y: 42%;
+  --ms-drop-y: 13.6rem;
+}
+
+@keyframes ms-multiplier-drop-mobile {
+  0% {
+    transform: translateX(-50%) scale(1) translateY(0px);
+  }
+  25% {
+    transform: translateX(-50%) scale(1.05) translateY(13.6rem);
+  }
+  50% {
+    transform: translateX(-50%) scale(1) translateY(13.6rem);
+  }
+  75% {
+    transform: translateX(-50%) scale(1.05) translateY(13.6rem);
+  }
+  100% {
+    transform: translateX(-50%) scale(1) translateY(13.6rem);
+  }
+}
+
+:host-context(html.is-portrait) .ms-live-multiplier--win.ms-live-multiplier--dropping,
+:host-context(html.is-portrait) .ms-live-multiplier--lose.ms-live-multiplier--dropping {
+  animation: ms-multiplier-drop-mobile var(--ms-result-drop-ms) ease-in-out forwards;
+}
+
+:host-context(html.is-portrait) .ms-live-multiplier--win.ms-live-multiplier--locked,
+:host-context(html.is-portrait) .ms-live-multiplier--lose.ms-live-multiplier--locked {
+  transform: translateX(-50%) scale(1) translateY(13.6rem);
+}
+
+:host-context(html.is-portrait) .ms-live-multiplier--win.ms-live-multiplier--exit,
+:host-context(html.is-portrait) .ms-live-multiplier--lose.ms-live-multiplier--exit {
+  transform: translateX(-50%) scale(0.94) translateY(13.6rem);
 }
 
 :host-context(html.is-portrait) .ms-history-chip {

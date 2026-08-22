@@ -1,5 +1,8 @@
 /** Magic Spell assets under /public/assets/magicSpell */
 
+/** Fixed render/update rate for Pixi + Spine on all devices. */
+export const GAME_TARGET_FPS = 32;
+
 export const GAME_ASSETS = {
   images: {
     logo: '/assets/magicSpell/images/header/logo.png',

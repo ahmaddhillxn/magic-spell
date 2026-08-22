@@ -4,8 +4,12 @@ import { Injectable, signal, computed } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class ResourceLoaderService {
+  private readonly soundPoolSize = 6;
   private urls: string[] = [];
   private cache = new Map<string, HTMLImageElement | HTMLAudioElement | HTMLVideoElement>();
+  private soundPools = new Map<string, HTMLAudioElement[]>();
+  private audioUnlocked = false;
+  private tabAudible = true;
 
   private _progress = signal(0);
   readonly progress = this._progress.asReadonly();
@@ -22,8 +26,22 @@ export class ResourceLoaderService {
   private assetsDone = false;
   /** Pixi board (pegs/bins) finished building */
   private sceneReady = false;
+  private finishTimer: ReturnType<typeof setTimeout> | null = null;
+  private finishRaf: number | null = null;
 
   constructor() {
+    if (typeof document !== 'undefined') {
+      this.tabAudible = !document.hidden;
+      document.addEventListener('visibilitychange', () => {
+        this.tabAudible = !document.hidden;
+        if (document.hidden) this.pauseAllSounds();
+      });
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pagehide', () => this.pauseAllSounds());
+    }
+
     const speed = 3; // little faster feel (was 2.5)
     let last = 0;
 
@@ -95,19 +113,27 @@ export class ResourceLoaderService {
       // Audio
       if (url.match(/\.(mp3|wav|ogg|webm|m4a)$/i)) {
         return new Promise<void>((resolve) => {
-          const audio = new Audio();
-          audio.oncanplaythrough = () => {
+          const audio = this.createAudio(url);
+          let settled = false;
+          const finish = () => {
+            if (settled) return;
+            settled = true;
             this.cache.set(url, audio);
             update();
             resolve();
           };
+          audio.oncanplaythrough = finish;
+          audio.onloadeddata = () => {
+            if (audio.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) finish();
+          };
           audio.onerror = () => {
             console.warn(`Audio failed: ${url}`);
+            if (settled) return;
+            settled = true;
             update();
             resolve();
           };
-          audio.src = url;
-          audio.load();
+          void audio.load();
         });
       }
 
@@ -124,6 +150,7 @@ export class ResourceLoaderService {
     });
 
     await Promise.all(promises);
+    this.warmSoundPools();
   }
 
   /** Call when Pixi board (pegs) is drawn — keeps loader up until pegs are visible. */
@@ -134,31 +161,192 @@ export class ResourceLoaderService {
 
   private maybeFinish(): void {
     if (!this.assetsDone || !this.sceneReady || this._isLoaded()) return;
-    setTimeout(() => this._isLoaded.set(true), 300);
+    this.waitForFullDisplayProgress();
+  }
+
+  private waitForFullDisplayProgress(): void {
+    if (this.finishRaf !== null) {
+      cancelAnimationFrame(this.finishRaf);
+      this.finishRaf = null;
+    }
+
+    const check = (): void => {
+      if (this._isLoaded()) return;
+
+      this._progress.set(1);
+      const current = this._displayProgress();
+
+      if (current >= 0.999) {
+        this._displayProgress.set(1);
+        if (this.finishTimer !== null) clearTimeout(this.finishTimer);
+        this.finishTimer = setTimeout(() => {
+          this.finishTimer = null;
+          this._isLoaded.set(true);
+        }, 250);
+        return;
+      }
+
+      this.finishRaf = requestAnimationFrame(check);
+    };
+
+    this.finishRaf = requestAnimationFrame(check);
   }
 
   get<T extends HTMLImageElement | HTMLAudioElement>(url: string): T | undefined {
     return this.cache.get(url) as T | undefined;
   }
 
-  playSound(url: string, volume = 0.7) {
-    const sound = this.get<HTMLAudioElement>(url);
-    if (sound) {
-      // clone -> allow multiple plays at once
-      const clone = sound.cloneNode() as HTMLAudioElement;
-      clone.volume = volume;
-      clone.play().catch((e) => console.warn('Sound play failed', e));
+  unlockAudio(): void {
+    if (this.audioUnlocked) return;
+    this.audioUnlocked = true;
+    this.warmSoundPools();
+    // iOS/Safari: play each pool once (muted) inside the user gesture to unlock playback.
+    for (const pool of this.soundPools.values()) {
+      const audio =
+        pool.find((item) => item.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) ?? pool[0];
+      if (!audio) continue;
+
+      const savedVolume = audio.volume;
+      audio.volume = 0;
+      void audio
+        .play()
+        .then(() => {
+          audio.pause();
+          try {
+            audio.currentTime = 0;
+          } catch {
+            // Ignore seek errors.
+          }
+          audio.volume = savedVolume;
+        })
+        .catch(() => {
+          audio.volume = savedVolume;
+        });
+    }
+  }
+
+  isTabAudible(): boolean {
+    return this.tabAudible;
+  }
+
+  createAudio(url: string): HTMLAudioElement {
+    const audio = new Audio();
+    audio.src = url;
+    audio.preload = 'auto';
+    audio.setAttribute('playsinline', 'true');
+    audio.setAttribute('webkit-playsinline', 'true');
+    return audio;
+  }
+
+  playSound(url: string, volume = 0.7): void {
+    if (!this.tabAudible) return;
+
+    const pool = this.getSoundPool(url);
+    const audio =
+      pool.find(
+        (item) =>
+          (item.paused || item.ended) && item.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA,
+      ) ??
+      pool.find((item) => item.paused || item.ended) ??
+      pool.reduce((oldest, item) => (item.currentTime < oldest.currentTime ? item : oldest));
+
+    const play = (): void => {
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+      } catch {
+        // Ignore seek errors on not-yet-ready audio.
+      }
+
+      audio.volume = volume;
+      void audio.play().catch((e) => console.warn(`Sound play failed (${url})`, e));
+    };
+
+    // Call play synchronously in the click/pointer handler — required on iOS/Safari.
+    play();
+
+    if (audio.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
       return;
     }
 
-    // Fallback when audio was not pre-cached
-    const fallback = new Audio(url);
-    fallback.volume = volume;
-    fallback.play().catch((e) => console.warn('Sound play failed', e));
+    const onReady = (): void => {
+      audio.removeEventListener('canplaythrough', onReady);
+      audio.removeEventListener('loadeddata', onReady);
+      if (audio.paused) play();
+    };
+
+    audio.addEventListener('canplaythrough', onReady, { once: true });
+    audio.addEventListener('loadeddata', onReady, { once: true });
+    void audio.load();
+  }
+
+  pauseAllSounds(): void {
+    for (const pool of this.soundPools.values()) {
+      for (const audio of pool) {
+        audio.pause();
+        try {
+          audio.currentTime = 0;
+        } catch {
+          // Ignore seek errors.
+        }
+      }
+    }
+  }
+
+  stopSound(url: string): void {
+    const pool = this.soundPools.get(url);
+    if (!pool) return;
+
+    for (const audio of pool) {
+      audio.pause();
+      try {
+        audio.currentTime = 0;
+      } catch {
+        // Ignore seek errors.
+      }
+    }
+  }
+
+  private warmSoundPools(): void {
+    for (const url of this.urls) {
+      if (/\.(mp3|wav|ogg|webm|m4a)$/i.test(url)) {
+        this.getSoundPool(url);
+      }
+    }
+  }
+
+  private getSoundPool(url: string): HTMLAudioElement[] {
+    const existing = this.soundPools.get(url);
+    if (existing) return existing;
+
+    const pool: HTMLAudioElement[] = [];
+    const cached = this.cache.get(url);
+    if (cached instanceof HTMLAudioElement) {
+      pool.push(cached);
+    }
+
+    while (pool.length < this.soundPoolSize) {
+      const audio = this.createAudio(url);
+      void audio.load();
+      pool.push(audio);
+    }
+
+    this.soundPools.set(url, pool);
+    return pool;
   }
 
   clear() {
+    if (this.finishTimer !== null) {
+      clearTimeout(this.finishTimer);
+      this.finishTimer = null;
+    }
+    if (this.finishRaf !== null) {
+      cancelAnimationFrame(this.finishRaf);
+      this.finishRaf = null;
+    }
     this.cache.clear();
+    this.soundPools.clear();
+    this.audioUnlocked = false;
     this.urls = [];
     this.assetsDone = false;
     this.sceneReady = false;

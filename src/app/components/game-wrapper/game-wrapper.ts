@@ -11,13 +11,14 @@ import {
 } from '@angular/core';
 import { Application } from 'pixi.js';
 import { MagicSpellScene } from '../scene-manager/magic-spell-scene';
+import { SoundScene } from '../scene-manager/sound-scene';
 import { Toggle } from '../services/toggle';
 import { BetAmountService } from '../services/bet-amount-service';
 import { BetHistoryModal } from '../modals/bet-history-modal/bet-history-modal';
 import { GuidenessModal } from '../modals/guideness-modal/guideness-modal';
 import { BetAmount } from '../modals/bet-amount/bet-amount';
 import { AutoplayModal } from '../modals/autoplay-modal/autoplay-modal';
-import { GAME_ASSETS } from '../game-assets';
+import { GAME_ASSETS, GAME_TARGET_FPS } from '../game-assets';
 import { BetHistoryService } from '../services/history';
 import { Api } from '../services/api';
 import { ResourceLoaderService } from '../services/resource-loader';
@@ -76,10 +77,13 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   private scene?: MagicSpellScene;
   private resizeObserver?: ResizeObserver;
   private roundAnimationFrame: number | null = null;
+  private countingInterval: ReturnType<typeof setInterval> | null = null;
   private readonly phaseTimers: ReturnType<typeof setTimeout>[] = [];
   private fallbackResultIndex = 0;
-  private bgAudio: HTMLAudioElement | null = null;
-  private userInteracted = false;
+  private soundScene!: SoundScene;
+  private adjustRepeatDelayTimer: ReturnType<typeof setTimeout> | null = null;
+  private adjustRepeatInterval: ReturnType<typeof setInterval> | null = null;
+  private adjustRepeatPointerId: number | null = null;
 
   constructor(private readonly cdr: ChangeDetectorRef) {
     this.displayAmount = this.betAmount.betAmount().toFixed(2);
@@ -87,6 +91,11 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
       typeof window !== 'undefined' &&
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.soundScene = new SoundScene(
+      this.loader,
+      () => this.toggle.isSoundOn(),
+      () => this.loader.isTabAudible(),
+    );
   }
 
   async ngAfterViewInit(): Promise<void> {
@@ -114,8 +123,8 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
         preference: 'webgl',
       });
 
-      app.ticker.maxFPS = isIOS || isCoarse ? 45 : 60;
-      app.ticker.minFPS = 30;
+      app.ticker.maxFPS = GAME_TARGET_FPS;
+      app.ticker.minFPS = GAME_TARGET_FPS;
 
       app.canvas.classList.add('sc-jObViz', 'spine-canvas');
       host.appendChild(app.canvas);
@@ -152,13 +161,42 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     }
   }
 
+  @HostListener('document:pointerup', ['$event'])
+  @HostListener('document:pointercancel', ['$event'])
+  onDocumentPointerUp(event: PointerEvent): void {
+    if (
+      this.adjustRepeatPointerId !== null &&
+      event.pointerId !== this.adjustRepeatPointerId
+    ) {
+      return;
+    }
+    this.adjustRepeatPointerId = null;
+    this.stopAdjustRepeat();
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    this.markInteraction();
+    this.soundScene.markInteraction();
     const target = event.target as HTMLElement | null;
     if (target?.closest('.menu-root')) return;
     if (target?.closest('app-bet-history-modal, app-guideness-modal')) return;
     if (this.toggle.isOpenMenu()) this.toggle.closeMenu();
+  }
+
+  @HostListener('document:visibilitychange')
+  onVisibilityChange(): void {
+    if (document.hidden) {
+      this.soundScene.pauseAll();
+      return;
+    }
+    if (this.toggle.isSoundOn() && this.soundScene.hasUserInteracted) {
+      this.soundScene.startBackground();
+    }
+  }
+
+  @HostListener('window:pagehide')
+  onPageHide(): void {
+    this.soundScene.pauseAll();
   }
 
   toggleMenu(): void {
@@ -185,7 +223,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   }
 
   openBetAmount(): void {
-    this.playButtonSound();
+    this.soundScene.playUiClick();
     this.betAmount.open();
   }
 
@@ -194,18 +232,18 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   }
 
   toggleSound(): void {
-    this.markInteraction();
+    this.soundScene.markInteraction();
     this.toggle.markGameInteraction();
     this.toggle.toggleMusicTrigger();
     if (this.toggle.isSoundOn()) {
-      this.startBackgroundSound();
+      this.soundScene.startBackground();
       return;
     }
-    this.stopBackgroundSound();
+    this.soundScene.stopBackground();
   }
 
-  adjustAmount(delta: number): void {
-    this.playButtonSound();
+  adjustAmount(delta: number, playSound = true): void {
+    if (playSound) this.soundScene.playUiClick();
     const settings = this.betAmount.getStakeSettings(this.toggle.currency());
     const next = Math.min(
       settings.maxBet,
@@ -213,12 +251,62 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     );
     this.betAmount.setBetAmount(next);
     this.displayAmount = next.toFixed(2);
+    this.cdr.detectChanges();
   }
 
-  adjustPayout(delta: number): void {
-    this.playButtonSound();
+  adjustPayout(delta: number, playSound = true): void {
+    if (playSound) this.soundScene.playUiClick();
     this.payout = Math.min(100, Math.max(1.01, +(this.payout + delta).toFixed(2)));
     this.displayPayout = `${this.payout.toFixed(2)}x`;
+    this.cdr.detectChanges();
+  }
+
+  startAmountAdjust(delta: number, event: PointerEvent): void {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.adjustRepeatPointerId = event.pointerId;
+    this.adjustAmount(delta);
+    this.beginAdjustRepeat(() => this.adjustAmount(delta, false), event);
+  }
+
+  startPayoutAdjust(delta: number, event: PointerEvent): void {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.adjustRepeatPointerId = event.pointerId;
+    this.adjustPayout(delta);
+    this.beginAdjustRepeat(() => this.adjustPayout(delta, false), event);
+  }
+
+  stopAdjustRepeat(): void {
+    if (this.adjustRepeatDelayTimer !== null) {
+      clearTimeout(this.adjustRepeatDelayTimer);
+      this.adjustRepeatDelayTimer = null;
+    }
+    if (this.adjustRepeatInterval !== null) {
+      clearInterval(this.adjustRepeatInterval);
+      this.adjustRepeatInterval = null;
+    }
+  }
+
+  private beginAdjustRepeat(apply: () => void, event: PointerEvent): void {
+    this.stopAdjustRepeat();
+    this.soundScene.markInteraction();
+    const target = event.currentTarget;
+    if (target instanceof HTMLElement && target.setPointerCapture) {
+      try {
+        target.setPointerCapture(event.pointerId);
+      } catch {
+        // Ignore if pointer capture is unavailable.
+      }
+    }
+
+    this.adjustRepeatDelayTimer = setTimeout(() => {
+      this.adjustRepeatDelayTimer = null;
+      apply();
+      this.adjustRepeatInterval = setInterval(apply, 75);
+    }, 280);
   }
 
   get liveMultiplierLabel(): string {
@@ -239,7 +327,8 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
 
   placeBet(): void {
     if (this.roundRunning) return;
-    this.playSecondButtonSound();
+    this.soundScene.playBetSequence();
+    this.soundScene.markInteraction();
     const result = this.resolveRoundResult();
     this.playResultAnimation(result.multiplier, result.winAmount, 'auto');
   }
@@ -288,6 +377,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopAdjustRepeat();
     this.clearRoundTimers();
     this.resizeObserver?.disconnect();
     this.resizeObserver = undefined;
@@ -297,8 +387,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
       this.app.destroy(true, { children: true });
       this.app = undefined;
     }
-    this.stopBackgroundSound();
-    this.bgAudio = null;
+    this.soundScene.destroy();
   }
 
   private clearRoundTimers(): void {
@@ -306,10 +395,38 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
       cancelAnimationFrame(this.roundAnimationFrame);
       this.roundAnimationFrame = null;
     }
+    if (this.countingInterval !== null) {
+      clearInterval(this.countingInterval);
+      this.countingInterval = null;
+    }
+    this.soundScene.cancelPendingRoundSounds();
     for (const timer of this.phaseTimers) {
       clearTimeout(timer);
     }
     this.phaseTimers.length = 0;
+  }
+
+  private createRoundId(): string {
+    try {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+      }
+    } catch {
+      // Fallback below for older Safari / non-secure contexts.
+    }
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  }
+
+  private forceFinishRoundIfStuck(): void {
+    if (!this.roundRunning) return;
+    this.clearRoundTimers();
+    this.winPopupVisible = false;
+    this.liveMultiplierVisible = false;
+    this.multiplierTone = 'neutral';
+    this.animationPhase = 'idle';
+    this.roundRunning = false;
+    this.scene?.resumeIdle();
+    this.cdr.detectChanges();
   }
 
   private playResultAnimation(
@@ -321,8 +438,6 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     const betAmount = this.betAmount.betAmount();
     const didWin =
       mode === 'win' || mode === 'winBig' || (mode === 'auto' && targetMultiplier >= this.payout);
-    if (didWin) this.playWinSound();
-    else this.playLoseSound();
     const winAmount = didWin ? computedWinAmount : 0;
     const countingMs = this.prefersReducedMotion ? 120 : 600;
     const dropMs = this.prefersReducedMotion ? 120 : 2000;
@@ -343,18 +458,18 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     else this.scene?.playLose(() => this.unlockBetAfterSpine());
     this.cdr.detectChanges();
 
-    const startedAt = performance.now();
-    const tick = (now: number) => {
-      const progress = Math.min(1, (now - startedAt) / countingMs);
-      const eased = 1 - Math.pow(1 - progress, 2.7);
-      this.liveMultiplier = 1 + (targetMultiplier - 1) * eased;
-      this.cdr.detectChanges();
-      if (progress < 1) {
-        this.roundAnimationFrame = requestAnimationFrame(tick);
-        return;
+    const maxRoundMs =
+      countingMs +
+      (didWin ? popupStartMs + popupCycleMs : dropEndMs + 320) +
+      900;
+    this.queuePhase(() => this.forceFinishRoundIfStuck(), maxRoundMs);
+
+    const onCountingComplete = (): void => {
+      if (this.countingInterval !== null) {
+        clearInterval(this.countingInterval);
+        this.countingInterval = null;
       }
 
-      this.roundAnimationFrame = null;
       this.liveMultiplier = targetMultiplier;
       this.multiplierTone = 'neutral';
       this.animationPhase = 'resultLocked';
@@ -362,15 +477,22 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
         0,
         this.maxRecentMultipliers,
       );
-      this.betHistory.emitSpinResult({
-        id: crypto.randomUUID(),
-        time: new Date(),
-        betAmount,
-        multiplier: targetMultiplier,
-        winAmount,
-        win: didWin,
-        payout: this.payout,
-      });
+
+      try {
+        this.betHistory.emitSpinResult({
+          id: this.createRoundId(),
+          time: new Date(),
+          betAmount,
+          multiplier: targetMultiplier,
+          winAmount,
+          win: didWin,
+          payout: this.payout,
+        });
+      } catch (error) {
+        console.warn('[GameWrapper] failed to persist spin result', error);
+      }
+
+      this.soundScene.playRoundResult(didWin);
       this.cdr.detectChanges();
 
       this.queuePhase(() => {
@@ -405,7 +527,20 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
       }
     };
 
-    this.roundAnimationFrame = requestAnimationFrame(tick);
+    const tickMs = 32;
+    let elapsed = 0;
+    let countingDone = false;
+    this.countingInterval = setInterval(() => {
+      elapsed += tickMs;
+      const progress = Math.min(1, elapsed / countingMs);
+      const eased = 1 - Math.pow(1 - progress, 2.7);
+      this.liveMultiplier = 1 + (targetMultiplier - 1) * eased;
+      this.cdr.detectChanges();
+      if (progress >= 1 && !countingDone) {
+        countingDone = true;
+        onCountingComplete();
+      }
+    }, tickMs);
   }
 
   private resolveRoundResult(): { multiplier: number; winAmount: number } {
@@ -475,6 +610,10 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   }
 
   private resetResultLayer(): void {
+    if (this.countingInterval !== null) {
+      clearInterval(this.countingInterval);
+      this.countingInterval = null;
+    }
     this.animationPhase = 'reset';
     this.winPopupVisible = false;
     this.queuePhase(() => {
@@ -488,6 +627,10 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   }
 
   private finishWinRound(): void {
+    if (this.countingInterval !== null) {
+      clearInterval(this.countingInterval);
+      this.countingInterval = null;
+    }
     this.winPopupVisible = false;
     this.liveMultiplierVisible = false;
     this.multiplierTone = 'neutral';
@@ -499,50 +642,5 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   private unlockBetAfterSpine(): void {
     this.scene?.resumeIdle();
     this.cdr.detectChanges();
-  }
-
-  private markInteraction(): void {
-    if (this.userInteracted) return;
-    this.userInteracted = true;
-    this.startBackgroundSound();
-  }
-
-  private playButtonSound(): void {
-    if (!this.toggle.isSoundOn()) return;
-    this.loader.playSound(GAME_ASSETS.sounds.click, 0.8);
-  }
-
-  private playSecondButtonSound(): void {
-    if (!this.toggle.isSoundOn()) return;
-    this.loader.playSound(GAME_ASSETS.sounds.secondClick, 0.85);
-  }
-
-  private playWinSound(): void {
-    if (!this.toggle.isSoundOn()) return;
-    this.loader.playSound(GAME_ASSETS.sounds.win, 0.9);
-  }
-
-  private playLoseSound(): void {
-    if (!this.toggle.isSoundOn()) return;
-    this.loader.playSound(GAME_ASSETS.sounds.lose, 0.9);
-  }
-
-  private startBackgroundSound(): void {
-    if (!this.toggle.isSoundOn() || !this.userInteracted) return;
-    if (!this.bgAudio) {
-      this.bgAudio = new Audio(GAME_ASSETS.sounds.bg);
-      this.bgAudio.loop = true;
-      this.bgAudio.volume = 0.35;
-    }
-    if (!this.bgAudio.paused) return;
-    this.bgAudio.play().catch(() => {
-      // Browser may block autoplay until stronger user gesture.
-    });
-  }
-
-  private stopBackgroundSound(): void {
-    if (!this.bgAudio) return;
-    this.bgAudio.pause();
-    this.bgAudio.currentTime = 0;
   }
 }

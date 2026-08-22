@@ -1,0 +1,9 @@
+app-game-wrapper {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+app-game-wrapper.is-game-ready {
+  visibility: visible;
+  pointer-events: auto;
+}

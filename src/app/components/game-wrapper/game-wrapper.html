@@ -149,7 +149,7 @@
                       <button
                         type="button"
                         class="sc-XxPfW dqtYIt pressableButton"
-                        (click)="adjustAmount(-0.1)"
+                        (pointerdown)="startAmountAdjust(-0.1, $event)"
                       >
                         <span class="sc-evchmO ibeDXI"
                           ><img alt="minus-plus-icon" [src]="assets.icons.minus"
@@ -172,7 +172,7 @@
                       <button
                         type="button"
                         class="sc-XxPfW dqtYIt pressableButton"
-                        (click)="adjustAmount(0.1)"
+                        (pointerdown)="startAmountAdjust(0.1, $event)"
                       >
                         <span class="sc-evchmO ibeDXI"
                           ><img alt="minus-plus-icon" [src]="assets.icons.plus"
@@ -191,7 +191,7 @@
                       <button
                         type="button"
                         class="sc-bQtKCm jozTJn pressableButton"
-                        (click)="adjustPayout(-0.1)"
+                        (pointerdown)="startPayoutAdjust(-0.1, $event)"
                       >
                         <span aria-label="Decrease multiplier" class="sc-fXErLa gMfbxS"
                           ><img alt="minus-icon" [src]="assets.icons.minus"
@@ -203,7 +203,7 @@
                       <button
                         type="button"
                         class="sc-bQtKCm jozTJn pressableButton"
-                        (click)="adjustPayout(0.1)"
+                        (pointerdown)="startPayoutAdjust(0.1, $event)"
                       >
                         <span aria-label="Increase multiplier" class="sc-fXErLa gMfbxS"
                           ><img alt="plus-icon" [src]="assets.icons.plus"
