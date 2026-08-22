@@ -446,7 +446,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     const popupStartMs = dropDelayMs + Math.round(dropMs * 0.25);
 
     this.clearRoundTimers();
-    this.soundScene.startRoundSpine();
+    this.soundScene.startRoundAudio(didWin, countingMs);
     this.roundRunning = true;
     this.liveMultiplierVisible = true;
     this.winPopupVisible = false;

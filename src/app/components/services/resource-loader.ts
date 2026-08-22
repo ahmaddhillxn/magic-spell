@@ -12,6 +12,8 @@ export class ResourceLoaderService {
   private tabAudible = true;
   private audioContext: AudioContext | null = null;
   private bufferCache = new Map<string, AudioBuffer>();
+  private readonly loopSources = new Map<string, AudioBufferSourceNode>();
+  private readonly scheduledSources: AudioBufferSourceNode[] = [];
 
   private _progress = signal(0);
   readonly progress = this._progress.asReadonly();
@@ -153,10 +155,8 @@ export class ResourceLoaderService {
 
     await Promise.all(promises);
     this.warmSoundPools();
-    const preloadUrls = this.urls.filter((url) =>
-      /secondLevelButtonsSound|spine\.mp3|\/win\.mp3|\/lose\.mp3$/i.test(url),
-    );
-    await Promise.all(preloadUrls.map((url) => this.preloadBuffer(url)));
+    const audioUrls = this.urls.filter((url) => /\.(mp3|wav|ogg|webm|m4a)$/i.test(url));
+    await Promise.all(audioUrls.map((url) => this.preloadBuffer(url)));
   }
 
   /** Call when Pixi board (pegs) is drawn — keeps loader up until pegs are visible. */
@@ -202,8 +202,28 @@ export class ResourceLoaderService {
     return this.cache.get(url) as T | undefined;
   }
 
+  /** Call on every user gesture — keeps Safari AudioContext alive. */
+  prepareAudio(): void {
+    const ctx = this.ensureAudioContext();
+    if (!ctx) return;
+
+    const ping = (): void => {
+      const buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(ctx.destination);
+      source.start(0);
+    };
+
+    if (ctx.state === 'suspended') {
+      void ctx.resume().then(ping).catch(() => {});
+      return;
+    }
+    ping();
+  }
+
   unlockAudio(): void {
-    void this.ensureAudioContext()?.resume();
+    this.prepareAudio();
     if (this.audioUnlocked) return;
     this.audioUnlocked = true;
     this.warmSoundPools();
@@ -272,13 +292,120 @@ export class ResourceLoaderService {
       });
   }
 
-  /** Web Audio playback — reliable for async/delayed SFX on mobile after unlock. */
+  /** Immediate Web Audio one-shot. */
   playDecodedSound(url: string, volume = 1): boolean {
     if (!this.tabAudible) return false;
-    void this.ensureAudioContext()?.resume();
-    if (this.playBufferedSound(url, volume, 1)) return true;
-    void this.preloadBuffer(url);
-    return false;
+    return this.scheduleDecodedSound(url, volume, 0);
+  }
+
+  /**
+   * Schedule one-shot SFX on the Web Audio clock (Safari-safe when called inside user gesture).
+   */
+  scheduleDecodedSound(url: string, volume: number, delaySec: number): boolean {
+    if (!this.tabAudible) return false;
+
+    const ctx = this.ensureAudioContext();
+    const buffer = this.bufferCache.get(url);
+    if (!ctx || !buffer) {
+      void this.preloadBuffer(url);
+      return false;
+    }
+
+    const start = (): void => {
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      const gainNode = ctx.createGain();
+      gainNode.gain.value = volume;
+      source.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      const when = ctx.currentTime + Math.max(0, delaySec);
+      source.start(when);
+      source.onended = () => {
+        const idx = this.scheduledSources.indexOf(source);
+        if (idx >= 0) this.scheduledSources.splice(idx, 1);
+      };
+      this.scheduledSources.push(source);
+    };
+
+    if (ctx.state === 'running') {
+      start();
+      return true;
+    }
+
+    void ctx.resume().then(start).catch(() => {});
+    return true;
+  }
+
+  /**
+   * Loop a decoded clip between startDelaySec and startDelaySec + durationSec (Safari-safe scheduling).
+   */
+  scheduleDecodedLoop(
+    url: string,
+    volume: number,
+    startDelaySec: number,
+    durationSec: number,
+  ): boolean {
+    if (!this.tabAudible) return false;
+
+    const ctx = this.ensureAudioContext();
+    const buffer = this.bufferCache.get(url);
+    if (!ctx || !buffer) {
+      void this.preloadBuffer(url);
+      return false;
+    }
+
+    const start = (): void => {
+      this.stopDecodedLoop(url);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      const gainNode = ctx.createGain();
+      gainNode.gain.value = volume;
+      source.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      const when = ctx.currentTime + Math.max(0, startDelaySec);
+      source.start(when);
+      source.stop(when + Math.max(0.05, durationSec));
+      source.onended = () => {
+        if (this.loopSources.get(url) === source) {
+          this.loopSources.delete(url);
+        }
+      };
+      this.loopSources.set(url, source);
+    };
+
+    if (ctx.state === 'running') {
+      start();
+      return true;
+    }
+
+    void ctx.resume().then(start).catch(() => {});
+    return true;
+  }
+
+  stopDecodedLoop(url: string): void {
+    const source = this.loopSources.get(url);
+    if (!source) return;
+    try {
+      source.stop();
+    } catch {
+      // Already stopped.
+    }
+    this.loopSources.delete(url);
+  }
+
+  cancelScheduledAudio(): void {
+    for (const source of this.scheduledSources) {
+      try {
+        source.stop();
+      } catch {
+        // Already stopped.
+      }
+    }
+    this.scheduledSources.length = 0;
+    for (const url of [...this.loopSources.keys()]) {
+      this.stopDecodedLoop(url);
+    }
   }
 
   playSound(url: string, volume = 0.7, gain = 1): void {
@@ -330,6 +457,7 @@ export class ResourceLoaderService {
   }
 
   pauseAllSounds(): void {
+    this.cancelScheduledAudio();
     for (const pool of this.soundPools.values()) {
       for (const audio of pool) {
         audio.pause();
@@ -441,6 +569,7 @@ export class ResourceLoaderService {
       this.finishRaf = null;
     }
     this.bufferCache.clear();
+    this.cancelScheduledAudio();
     this.audioContext?.close().catch(() => {});
     this.audioContext = null;
     this.cache.clear();
