@@ -326,8 +326,8 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
 
   placeBet(): void {
     if (this.roundRunning) return;
-    this.soundScene.playBetClick();
     this.soundScene.markInteraction();
+    this.soundScene.playBetClick();
     const result = this.resolveRoundResult();
     this.playResultAnimation(result.multiplier, result.winAmount, 'auto');
   }
@@ -433,6 +433,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     computedWinAmount: number,
     mode: 'auto' | 'win' | 'winBig' | 'lose' = 'auto',
   ): void {
+    this.soundScene.markInteraction();
     this.updateMultiplierAnchors();
     const betAmount = this.betAmount.betAmount();
     const didWin =

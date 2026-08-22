@@ -7,7 +7,7 @@ type SoundGate = () => boolean;
  * Central audio scene — all game sounds play here in a fixed order:
  * 1. UI click → duck bg → click SFX
  * 2. Bet → second click → spine loop (Web Audio scheduled on Safari)
- * 3. Round end → win/lose (scheduled on Web Audio clock during bet gesture)
+ * 3. Round end → win/lose via primed HTML audio (Safari-safe delayed playback)
  */
 export class SoundScene {
   private bgAudio: HTMLAudioElement | null = null;
@@ -15,7 +15,6 @@ export class SoundScene {
   private spineSoundTimer: ReturnType<typeof setTimeout> | null = null;
   private spineAudio: HTMLAudioElement | null = null;
   private userInteracted = false;
-  private roundAudioScheduled = false;
 
   private readonly bgVolume = 0.18;
   private readonly bgDuckedVolume = 0.07;
@@ -43,8 +42,9 @@ export class SoundScene {
   markInteraction(): void {
     if (this.userInteracted) return;
     this.userInteracted = true;
-    this.loader.unlockAudio();
+    this.loader.prepareAudio();
     this.startBackground();
+    this.loader.unlockAudio();
   }
 
   /** Amount/payout +/- and bet-amount open. */
@@ -52,18 +52,25 @@ export class SoundScene {
     this.playUiSound(GAME_ASSETS.sounds.click, this.sfxButtonVolume, this.uiDuckMs);
   }
 
+  /**
+   * Prime win/lose for delayed playback at counting end.
+   */
+  primeRoundResults(): void {
+    this.loader.primeSound(GAME_ASSETS.sounds.win);
+    this.loader.primeSound(GAME_ASSETS.sounds.lose);
+  }
+
   /** Bet button click SFX. */
   playBetClick(): void {
     this.loader.prepareAudio();
-    this.loader.primeSound(GAME_ASSETS.sounds.win);
-    this.loader.primeSound(GAME_ASSETS.sounds.lose);
-    this.loader.primeSound(GAME_ASSETS.sounds.spine);
+    const gain = this.loader.isMobileSafari() ? 1 : this.sfxBetGain;
     this.playUiSound(
       GAME_ASSETS.sounds.secondClick,
       this.sfxButtonVolume,
       this.uiDuckMs,
-      this.sfxBetGain,
+      gain,
     );
+    this.startBackground();
   }
 
   /** @deprecated use {@link playBetClick} */
@@ -72,21 +79,26 @@ export class SoundScene {
   }
 
   /**
-   * Schedule spine + win/lose on the Web Audio timeline (Safari-safe — call synchronously from bet click).
+   * Schedule spine during bet tap; win/lose play via primed element at counting end.
    */
   startRoundAudio(didWin: boolean, countingMs: number): void {
     if (!this.isSoundOn() || !this.isTabAudible()) return;
 
     this.loader.prepareAudio();
     this.loader.cancelScheduledAudio();
-    this.roundAudioScheduled = false;
+    this.primeRoundResults();
+
+    this.duckBackground(this.spineDuckMs);
+
+    if (this.loader.isMobileSafari()) {
+      // Safari blocks setTimeout/Web-Audio-delayed SFX — play spine in the same tap gesture.
+      this.playSpineSoundHtml();
+      return;
+    }
 
     const spineStartSec = this.spineDelayMs / 1000;
     const resultDelaySec = (countingMs + 50) / 1000;
     const spineDurationSec = Math.max(0.08, resultDelaySec - spineStartSec);
-    const resultUrl = didWin ? GAME_ASSETS.sounds.win : GAME_ASSETS.sounds.lose;
-
-    this.duckBackground(this.spineDuckMs);
 
     const spineScheduled = this.loader.scheduleDecodedLoop(
       GAME_ASSETS.sounds.spine,
@@ -94,31 +106,20 @@ export class SoundScene {
       spineStartSec,
       spineDurationSec,
     );
-    const resultScheduled = this.loader.scheduleDecodedSound(
-      resultUrl,
-      this.sfxResultVolume,
-      resultDelaySec,
-    );
 
-    this.roundAudioScheduled = spineScheduled && resultScheduled;
     if (spineScheduled) {
       this.duckBackground(this.resultDuckMs);
-    }
-
-    if (!spineScheduled) {
+    } else {
       this.scheduleSpineSoundHtml();
     }
   }
 
-  /** Fallback when counting ends — only if Web Audio schedule failed. */
+  /** Play win/lose when counting ends. */
   playRoundResult(didWin: boolean): void {
     this.stopSpineSound();
-    if (this.roundAudioScheduled) {
-      this.roundAudioScheduled = false;
-      return;
-    }
+
     const url = didWin ? GAME_ASSETS.sounds.win : GAME_ASSETS.sounds.lose;
-    window.setTimeout(() => this.playResultSound(url), 50);
+    this.playResultSound(url);
   }
 
   cancelPendingRoundSounds(): void {
@@ -127,22 +128,51 @@ export class SoundScene {
       this.spineSoundTimer = null;
     }
     this.loader.cancelScheduledAudio();
-    this.roundAudioScheduled = false;
     this.stopSpineSound();
   }
 
   startBackground(): void {
     if (!this.isSoundOn() || !this.userInteracted || !this.isTabAudible()) return;
+
     if (!this.bgAudio) {
-      this.bgAudio = this.loader.createAudio(GAME_ASSETS.sounds.bg);
+      const cached = this.loader.get<HTMLAudioElement>(GAME_ASSETS.sounds.bg);
+      this.bgAudio = cached ?? this.loader.createAudio(GAME_ASSETS.sounds.bg);
       this.bgAudio.loop = true;
       this.bgAudio.volume = this.bgVolume;
+      if (!cached) void this.bgAudio.load();
+    }
+
+    this.playBackgroundNow();
+  }
+
+  private playBackgroundNow(): void {
+    if (!this.bgAudio || !this.isSoundOn() || !this.isTabAudible()) return;
+    if (!this.bgAudio.paused) return;
+
+    const play = (): void => {
+      if (!this.bgAudio || !this.isSoundOn()) return;
+      this.bgAudio.volume = this.bgVolume;
+      void this.bgAudio.play().catch(() => {
+        // Retry once media is ready (common on iOS first gesture).
+      });
+    };
+
+    if (this.bgAudio.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      play();
+      return;
+    }
+
+    const onReady = (): void => {
+      this.bgAudio?.removeEventListener('canplaythrough', onReady);
+      this.bgAudio?.removeEventListener('loadeddata', onReady);
+      play();
+    };
+
+    this.bgAudio.addEventListener('canplaythrough', onReady, { once: true });
+    this.bgAudio.addEventListener('loadeddata', onReady, { once: true });
+    if (this.bgAudio.readyState === HTMLMediaElement.HAVE_NOTHING) {
       void this.bgAudio.load();
     }
-    if (!this.bgAudio.paused) return;
-    void this.bgAudio.play().catch(() => {
-      // Browser may block autoplay until stronger user gesture.
-    });
   }
 
   stopBackground(): void {
@@ -201,15 +231,18 @@ export class SoundScene {
       this.spineAudio = this.loader.createAudio(GAME_ASSETS.sounds.spine);
       this.spineAudio.loop = true;
       this.spineAudio.preload = 'auto';
+      this.spineAudio.volume = this.sfxSpineVolume;
       void this.spineAudio.load();
     }
 
     this.spineAudio.volume = this.sfxSpineVolume;
     try {
+      this.spineAudio.pause();
       this.spineAudio.currentTime = 0;
     } catch {
       // Ignore seek errors on not-yet-ready audio.
     }
+
     void this.spineAudio.play().catch(() => {
       this.loader.playSound(GAME_ASSETS.sounds.spine, this.sfxSpineVolume);
     });
@@ -230,12 +263,15 @@ export class SoundScene {
 
   private playResultSound(url: string): void {
     if (!this.isSoundOn() || !this.isTabAudible()) return;
+    this.loader.prepareAudio();
     this.duckBackground(this.resultDuckMs);
 
+    if (this.loader.playPrimedSound(url, this.sfxResultVolume)) {
+      return;
+    }
     if (this.loader.playDecodedSound(url, this.sfxResultVolume)) {
       return;
     }
-
     this.loader.playSound(url, this.sfxResultVolume);
   }
 

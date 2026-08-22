@@ -12,6 +12,8 @@ export class ResourceLoaderService {
   private tabAudible = true;
   private audioContext: AudioContext | null = null;
   private bufferCache = new Map<string, AudioBuffer>();
+  /** Separate elements for iOS delayed playback — never shared with immediate SFX pool. */
+  private readonly delayedAudio = new Map<string, HTMLAudioElement>();
   private readonly loopSources = new Map<string, AudioBufferSourceNode>();
   private readonly scheduledSources: AudioBufferSourceNode[] = [];
 
@@ -207,19 +209,17 @@ export class ResourceLoaderService {
     const ctx = this.ensureAudioContext();
     if (!ctx) return;
 
-    const ping = (): void => {
+    void ctx.resume().catch(() => {});
+
+    try {
       const buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
       const source = ctx.createBufferSource();
       source.buffer = buffer;
       source.connect(ctx.destination);
       source.start(0);
-    };
-
-    if (ctx.state === 'suspended') {
-      void ctx.resume().then(ping).catch(() => {});
-      return;
+    } catch {
+      // Ignore ping failures.
     }
-    ping();
   }
 
   unlockAudio(): void {
@@ -227,8 +227,9 @@ export class ResourceLoaderService {
     if (this.audioUnlocked) return;
     this.audioUnlocked = true;
     this.warmSoundPools();
-    // iOS/Safari: play each pool once (muted) inside the user gesture to unlock playback.
-    for (const pool of this.soundPools.values()) {
+    // iOS/Safari: mute-play SFX pools inside the user gesture — skip background music.
+    for (const [url, pool] of this.soundPools.entries()) {
+      if (this.isBackgroundSound(url)) continue;
       const audio =
         pool.find((item) => item.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) ?? pool[0];
       if (!audio) continue;
@@ -256,6 +257,16 @@ export class ResourceLoaderService {
     return this.tabAudible;
   }
 
+  /** iOS Safari and mobile WebKit — HTML audio path is more reliable than Web Audio scheduling. */
+  isMobileSafari(): boolean {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent;
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    const isWebKitMobile =
+      /Safari/i.test(ua) && !/Chrome|CriOS|FxiOS|EdgiOS/i.test(ua) && /Mobile/i.test(ua);
+    return isIOS || isWebKitMobile;
+  }
+
   createAudio(url: string): HTMLAudioElement {
     const audio = new Audio();
     audio.src = url;
@@ -266,14 +277,42 @@ export class ResourceLoaderService {
   }
 
   /**
-   * iOS/Safari: mute-play during user gesture so delayed HTMLAudio playback works later.
+   * iOS/Safari: mute-play a dedicated element during user gesture for delayed playback.
    */
   primeSound(url: string): void {
-    const pool = this.getSoundPool(url);
-    const audio =
-      pool.find((item) => item.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) ?? pool[0];
-    if (!audio) return;
+    this.primeAudioElement(this.getDelayedAudio(url));
+  }
 
+  /** Play a sound that was primed during the bet tap (Safari delayed path). */
+  playPrimedSound(url: string, volume = 1): boolean {
+    if (!this.tabAudible) return false;
+
+    const audio = this.delayedAudio.get(url);
+    if (!audio) return false;
+
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+    } catch {
+      // Ignore seek errors.
+    }
+
+    audio.volume = volume;
+    void audio.play().catch((e) => console.warn(`Primed sound play failed (${url})`, e));
+    return true;
+  }
+
+  private getDelayedAudio(url: string): HTMLAudioElement {
+    const existing = this.delayedAudio.get(url);
+    if (existing) return existing;
+
+    const audio = this.createAudio(url);
+    void audio.load();
+    this.delayedAudio.set(url, audio);
+    return audio;
+  }
+
+  private primeAudioElement(audio: HTMLAudioElement): void {
     const savedVolume = audio.volume;
     audio.volume = 0;
     void audio
@@ -311,7 +350,10 @@ export class ResourceLoaderService {
       return false;
     }
 
-    const start = (): void => {
+    // Must schedule synchronously inside the user gesture — Safari ignores deferred starts.
+    void ctx.resume().catch(() => {});
+
+    try {
       const source = ctx.createBufferSource();
       source.buffer = buffer;
       const gainNode = ctx.createGain();
@@ -325,15 +367,10 @@ export class ResourceLoaderService {
         if (idx >= 0) this.scheduledSources.splice(idx, 1);
       };
       this.scheduledSources.push(source);
-    };
-
-    if (ctx.state === 'running') {
-      start();
       return true;
+    } catch {
+      return false;
     }
-
-    void ctx.resume().then(start).catch(() => {});
-    return true;
   }
 
   /**
@@ -354,7 +391,9 @@ export class ResourceLoaderService {
       return false;
     }
 
-    const start = (): void => {
+    void ctx.resume().catch(() => {});
+
+    try {
       this.stopDecodedLoop(url);
       const source = ctx.createBufferSource();
       source.buffer = buffer;
@@ -372,15 +411,10 @@ export class ResourceLoaderService {
         }
       };
       this.loopSources.set(url, source);
-    };
-
-    if (ctx.state === 'running') {
-      start();
       return true;
+    } catch {
+      return false;
     }
-
-    void ctx.resume().then(start).catch(() => {});
-    return true;
   }
 
   stopDecodedLoop(url: string): void {
@@ -411,7 +445,8 @@ export class ResourceLoaderService {
   playSound(url: string, volume = 0.7, gain = 1): void {
     if (!this.tabAudible) return;
 
-    if (gain > 1.01) {
+    const useWebAudioBoost = gain > 1.01 && !this.isMobileSafari();
+    if (useWebAudioBoost) {
       const played = this.playBufferedSound(url, volume, gain);
       if (played) return;
       void this.preloadBuffer(url);
@@ -458,7 +493,8 @@ export class ResourceLoaderService {
 
   pauseAllSounds(): void {
     this.cancelScheduledAudio();
-    for (const pool of this.soundPools.values()) {
+    for (const [url, pool] of this.soundPools.entries()) {
+      if (this.isBackgroundSound(url)) continue;
       for (const audio of pool) {
         audio.pause();
         try {
@@ -486,13 +522,17 @@ export class ResourceLoaderService {
 
   private warmSoundPools(): void {
     for (const url of this.urls) {
-      if (/\.(mp3|wav|ogg|webm|m4a)$/i.test(url)) {
-        this.getSoundPool(url);
-        if (/secondLevelButtonsSound/i.test(url)) {
-          void this.preloadBuffer(url);
-        }
+      if (!/\.(mp3|wav|ogg|webm|m4a)$/i.test(url)) continue;
+      if (this.isBackgroundSound(url)) continue;
+      this.getSoundPool(url);
+      if (/secondLevelButtonsSound/i.test(url)) {
+        void this.preloadBuffer(url);
       }
     }
+  }
+
+  private isBackgroundSound(url: string): boolean {
+    return /backgroundSound/i.test(url);
   }
 
   private ensureAudioContext(): AudioContext | null {
@@ -527,16 +567,20 @@ export class ResourceLoaderService {
     const buffer = this.bufferCache.get(url);
     if (!ctx || !buffer) return false;
 
-    void ctx.resume();
+    void ctx.resume().catch(() => {});
 
-    const source = ctx.createBufferSource();
-    source.buffer = buffer;
-    const gainNode = ctx.createGain();
-    gainNode.gain.value = volume * gain;
-    source.connect(gainNode);
-    gainNode.connect(ctx.destination);
-    source.start(0);
-    return true;
+    try {
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      const gainNode = ctx.createGain();
+      gainNode.gain.value = volume * gain;
+      source.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      source.start(0);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   private getSoundPool(url: string): HTMLAudioElement[] {
@@ -569,6 +613,7 @@ export class ResourceLoaderService {
       this.finishRaf = null;
     }
     this.bufferCache.clear();
+    this.delayedAudio.clear();
     this.cancelScheduledAudio();
     this.audioContext?.close().catch(() => {});
     this.audioContext = null;
