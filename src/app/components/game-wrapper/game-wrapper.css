@@ -72,19 +72,19 @@
 
 @keyframes ms-multiplier-drop {
   0% {
-    transform: translate3d(-50%, 0, 0) scale(1);
+    transform: translateX(-50%) scale(1) translateY(0px);
   }
   25% {
-    transform: translate3d(-50%, var(--ms-drop-y, 16rem), 0) scale(1.05);
+    transform: translateX(-50%) scale(1.05) translateY(16rem);
   }
   50% {
-    transform: translate3d(-50%, var(--ms-drop-y, 16rem), 0) scale(1);
+    transform: translateX(-50%) scale(1) translateY(16rem);
   }
   75% {
-    transform: translate3d(-50%, var(--ms-drop-y, 16rem), 0) scale(1.05);
+    transform: translateX(-50%) scale(1.05) translateY(16rem);
   }
   100% {
-    transform: translate3d(-50%, var(--ms-drop-y, 16rem), 0) scale(1);
+    transform: translateX(-50%) scale(1) translateY(16rem);
   }
 }
 
@@ -3153,7 +3153,7 @@ button,
 .ms-live-multiplier--win.ms-live-multiplier--locked,
 .ms-live-multiplier--lose.ms-live-multiplier--locked{
   top: var(--ms-head-y, 14%);
-  transform: translate3d(-50%, var(--ms-drop-y, 16rem), 0) scale(1);
+  transform: translateX(-50%) scale(1) translateY(16rem);
   transition: color 200ms ease;
 }
 
@@ -3167,7 +3167,7 @@ button,
 .ms-live-multiplier--win.ms-live-multiplier--exit,
 .ms-live-multiplier--lose.ms-live-multiplier--exit{
   top: var(--ms-head-y, 14%);
-  transform: translate3d(-50%, var(--ms-drop-y, 16rem), 0) scale(0.94);
+  transform: translateX(-50%) scale(0.94) translateY(16rem);
 }
 
 .ms-win-popup{
@@ -3237,7 +3237,7 @@ button,
   .ms-live-multiplier--lose.ms-live-multiplier--dropping{
     animation: none;
     top: var(--ms-head-y, 14%);
-    transform: translate3d(-50%, var(--ms-drop-y, 16rem), 0) scale(1);
+    transform: translateX(-50%) scale(1) translateY(16rem);
   }
 }
 
