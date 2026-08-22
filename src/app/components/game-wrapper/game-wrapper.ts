@@ -59,6 +59,10 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
   displayAmount = '0.10';
   displayPayout = '2.00x';
   payout = 2;
+  readonly minPayout = 1.01;
+  readonly maxPayout = 1000;
+  private readonly payoutClickStep = 1;
+  private readonly payoutRepeatStep = 5;
   readonly maxRecentMultipliers = 10;
   recentMultipliers = [20.59, 1.04, 2.25, 2.06, 5.8, 362.88, 1.34, 1.69, 2.69, 3.97];
   liveMultiplier = 1;
@@ -253,29 +257,72 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  get isAmountAtMin(): boolean {
+    const settings = this.betAmount.getStakeSettings(this.toggle.currency());
+    return this.betAmount.betAmount() <= settings.minBet;
+  }
+
+  get isAmountAtMax(): boolean {
+    const settings = this.betAmount.getStakeSettings(this.toggle.currency());
+    return this.betAmount.betAmount() >= settings.maxBet;
+  }
+
   adjustPayout(delta: number, playSound = true): void {
     if (playSound) this.soundScene.playUiClick();
-    this.payout = Math.min(100, Math.max(1.01, +(this.payout + delta).toFixed(2)));
+    this.payout = Math.min(
+      this.maxPayout,
+      Math.max(this.minPayout, +(this.payout + delta).toFixed(2)),
+    );
     this.displayPayout = `${this.payout.toFixed(2)}x`;
     this.cdr.detectChanges();
   }
 
   startAmountAdjust(delta: number, event: PointerEvent): void {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
+    if (delta < 0 && this.isAmountAtMin) return;
+    if (delta > 0 && this.isAmountAtMax) return;
     event.preventDefault();
     event.stopPropagation();
     this.adjustRepeatPointerId = event.pointerId;
     this.adjustAmount(delta);
-    this.beginAdjustRepeat(() => this.adjustAmount(delta, false), event);
+    this.beginAdjustRepeat(() => {
+      if (delta < 0 && this.isAmountAtMin) {
+        this.stopAdjustRepeat();
+        return;
+      }
+      if (delta > 0 && this.isAmountAtMax) {
+        this.stopAdjustRepeat();
+        return;
+      }
+      this.adjustAmount(delta, false);
+    }, event);
   }
 
   startPayoutAdjust(delta: number, event: PointerEvent): void {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
+    const direction = delta < 0 ? -1 : 1;
+    if (direction < 0 && this.isPayoutAtMin) return;
+    if (direction > 0 && this.isPayoutAtMax) return;
     event.preventDefault();
     event.stopPropagation();
     this.adjustRepeatPointerId = event.pointerId;
-    this.adjustPayout(delta);
-    this.beginAdjustRepeat(() => this.adjustPayout(delta, false), event);
+    const clickStep = direction * this.payoutClickStep;
+    this.adjustPayout(clickStep);
+    this.beginAdjustRepeat(
+      () => {
+        if (direction < 0 && this.isPayoutAtMin) {
+          this.stopAdjustRepeat();
+          return;
+        }
+        if (direction > 0 && this.isPayoutAtMax) {
+          this.stopAdjustRepeat();
+          return;
+        }
+        this.adjustPayout(direction * this.payoutRepeatStep, false);
+      },
+      event,
+      { delayMs: 180, intervalMs: 35 },
+    );
   }
 
   stopAdjustRepeat(): void {
@@ -289,7 +336,11 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     }
   }
 
-  private beginAdjustRepeat(apply: () => void, event: PointerEvent): void {
+  private beginAdjustRepeat(
+    apply: () => void,
+    event: PointerEvent,
+    options?: { delayMs?: number; intervalMs?: number },
+  ): void {
     this.stopAdjustRepeat();
     this.soundScene.markInteraction();
     const target = event.currentTarget;
@@ -301,11 +352,14 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
       }
     }
 
+    const delayMs = options?.delayMs ?? 280;
+    const intervalMs = options?.intervalMs ?? 75;
+
     this.adjustRepeatDelayTimer = setTimeout(() => {
       this.adjustRepeatDelayTimer = null;
       apply();
-      this.adjustRepeatInterval = setInterval(apply, 75);
-    }, 280);
+      this.adjustRepeatInterval = setInterval(apply, intervalMs);
+    }, delayMs);
   }
 
   get liveMultiplierLabel(): string {
@@ -322,6 +376,14 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
 
   resultIsWin(multiplier: number): boolean {
     return multiplier >= this.payout;
+  }
+
+  get isPayoutAtMin(): boolean {
+    return this.payout <= this.minPayout;
+  }
+
+  get isPayoutAtMax(): boolean {
+    return this.payout >= this.maxPayout;
   }
 
   placeBet(): void {

@@ -3817,6 +3817,7 @@ button,
   text-align: center;
   outline: none;
   font-size: 1.92rem;
+  font-weight: 700;
   font-variation-settings: 'wght' 700;
   cursor: pointer;
   overflow: hidden;
@@ -3824,8 +3825,14 @@ button,
 
 @media (orientation: portrait) and (max-width: 900px){.cmLJhm{
     font-size: 1.6rem;
-    font-variation-settings: 'wght' 500;
+    font-weight: 700;
+    font-variation-settings: 'wght' 700;
   }
+}
+
+.cmLJhm .textfit-text{
+  font-weight: 700;
+  font-variation-settings: 'wght' 700;
 }
 
 .fdvzkD{
@@ -3865,8 +3872,11 @@ button,
 
 .dqtYIt:disabled{
   cursor: default;
-  opacity: 0.5;
   pointer-events: none;
+}
+
+.dqtYIt:disabled .ibeDXI{
+  filter: brightness(60%);
 }
 
 .SBmOe{
@@ -3971,6 +3981,15 @@ button,
 @media (orientation: portrait) and (max-width: 900px){.jozTJn{
     padding: 0.5rem;
   }
+}
+
+.jozTJn:disabled{
+  cursor: default;
+  pointer-events: none;
+}
+
+.jozTJn:disabled .gMfbxS{
+  filter: brightness(60%);
 }
 
 .gMfbxS{
@@ -4276,7 +4295,13 @@ button,
   padding: 0.32rem;
 }
 
-:host-context(html.is-portrait) .cmLJhm,
+:host-context(html.is-portrait) .cmLJhm{
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variation-settings: 'wght' 700;
+  color: var(--bet-value-color);
+}
+
 :host-context(html.is-portrait) .bBgTGA{
   font-size: 1.6rem;
   font-variation-settings: 'wght' 500;

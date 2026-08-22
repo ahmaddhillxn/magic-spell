@@ -145,6 +145,7 @@
                       <button
                         type="button"
                         class="sc-XxPfW dqtYIt pressableButton"
+                        [disabled]="isAmountAtMin"
                         (pointerdown)="startAmountAdjust(-0.1, $event)"
                       >
                         <span class="sc-evchmO ibeDXI"
@@ -168,6 +169,7 @@
                       <button
                         type="button"
                         class="sc-XxPfW dqtYIt pressableButton"
+                        [disabled]="isAmountAtMax"
                         (pointerdown)="startAmountAdjust(0.1, $event)"
                       >
                         <span class="sc-evchmO ibeDXI"
@@ -187,6 +189,7 @@
                       <button
                         type="button"
                         class="sc-bQtKCm jozTJn pressableButton"
+                        [disabled]="isPayoutAtMin"
                         (pointerdown)="startPayoutAdjust(-0.1, $event)"
                       >
                         <span aria-label="Decrease multiplier" class="sc-fXErLa gMfbxS"
@@ -199,6 +202,7 @@
                       <button
                         type="button"
                         class="sc-bQtKCm jozTJn pressableButton"
+                        [disabled]="isPayoutAtMax"
                         (pointerdown)="startPayoutAdjust(0.1, $event)"
                       >
                         <span aria-label="Increase multiplier" class="sc-fXErLa gMfbxS"
