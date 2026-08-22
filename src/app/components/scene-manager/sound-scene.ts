@@ -13,6 +13,7 @@ export class SoundScene {
   private bgAudio: HTMLAudioElement | null = null;
   private bgDuckTimer: ReturnType<typeof setTimeout> | null = null;
   private spineSoundTimer: ReturnType<typeof setTimeout> | null = null;
+  private spineAudio: HTMLAudioElement | null = null;
   private userInteracted = false;
 
   private readonly bgVolume = 0.18;
@@ -25,7 +26,7 @@ export class SoundScene {
   private readonly uiDuckMs = 700;
   private readonly spineDuckMs = 3200;
   private readonly resultDuckMs = 2800;
-  private readonly spineDelayMs = 200;
+  private readonly spineDelayMs = 120;
 
   constructor(
     private readonly loader: ResourceLoaderService,
@@ -51,16 +52,26 @@ export class SoundScene {
   }
 
   /**
-   * Bet button — ordered sequence:
-   * second click immediately, spine SFX after {@link spineDelayMs}.
+   * Bet button — second click SFX only (spine starts in {@link startRoundSpine}).
    */
-  playBetSequence(): void {
+  playBetClick(): void {
     this.playUiSound(
       GAME_ASSETS.sounds.secondClick,
       this.sfxButtonVolume,
       this.uiDuckMs,
       this.sfxBetGain,
     );
+  }
+
+  /** @deprecated use {@link playBetClick} + {@link startRoundSpine} */
+  playBetSequence(): void {
+    this.playBetClick();
+  }
+
+  /**
+   * Wizard round SFX — call after round timers reset so pending spine is not cancelled.
+   */
+  startRoundSpine(): void {
     this.scheduleSpineSound();
   }
 
@@ -111,12 +122,21 @@ export class SoundScene {
 
   pauseAll(): void {
     this.cancelPendingRoundSounds();
+    if (this.spineAudio) {
+      this.spineAudio.pause();
+      try {
+        this.spineAudio.currentTime = 0;
+      } catch {
+        // Ignore seek errors.
+      }
+    }
     this.loader.pauseAllSounds();
     this.stopBackground();
   }
 
   destroy(): void {
     this.pauseAll();
+    this.spineAudio = null;
     this.bgAudio = null;
   }
 
@@ -139,11 +159,36 @@ export class SoundScene {
 
   private playSpineSound(): void {
     if (!this.isSoundOn() || !this.isTabAudible()) return;
+    this.loader.unlockAudio();
     this.duckBackground(this.spineDuckMs);
-    this.loader.playSound(GAME_ASSETS.sounds.spine, this.sfxSpineVolume);
+
+    if (!this.spineAudio) {
+      this.spineAudio = this.loader.createAudio(GAME_ASSETS.sounds.spine);
+      this.spineAudio.loop = true;
+      this.spineAudio.preload = 'auto';
+      void this.spineAudio.load();
+    }
+
+    this.spineAudio.volume = this.sfxSpineVolume;
+    try {
+      this.spineAudio.currentTime = 0;
+    } catch {
+      // Ignore seek errors on not-yet-ready audio.
+    }
+    void this.spineAudio.play().catch(() => {
+      this.loader.playSound(GAME_ASSETS.sounds.spine, this.sfxSpineVolume);
+    });
   }
 
   private stopSpineSound(): void {
+    if (this.spineAudio) {
+      this.spineAudio.pause();
+      try {
+        this.spineAudio.currentTime = 0;
+      } catch {
+        // Ignore seek errors.
+      }
+    }
     this.loader.stopSound(GAME_ASSETS.sounds.spine);
   }
 

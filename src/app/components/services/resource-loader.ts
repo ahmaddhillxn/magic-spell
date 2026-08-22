@@ -153,8 +153,10 @@ export class ResourceLoaderService {
 
     await Promise.all(promises);
     this.warmSoundPools();
-    const betClickUrl = this.urls.find((url) => /secondLevelButtonsSound/i.test(url));
-    if (betClickUrl) await this.preloadBuffer(betClickUrl);
+    const preloadUrls = this.urls.filter((url) =>
+      /secondLevelButtonsSound|spine\.mp3$/i.test(url),
+    );
+    await Promise.all(preloadUrls.map((url) => this.preloadBuffer(url)));
   }
 
   /** Call when Pixi board (pegs) is drawn — keeps loader up until pegs are visible. */

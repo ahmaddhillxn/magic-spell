@@ -168,15 +168,6 @@ export const currencySymbols: { [key: string]: string } = {
   providedIn: 'root',
 })
 export class Toggle {
-  subscribe(arg0: (shouldPlay: any) => void): import('rxjs').Subscription {
-    throw new Error('Method not implemented.');
-  }
-
-  private _assetsCount = signal(0);
-  private _assetsTotal = 3;
-
-  private _isAssetsLoaded: WritableSignal<boolean> = signal(false);
-  readonly isAssetsLoaded = this._isAssetsLoaded.asReadonly();
   private _balance: WritableSignal<number> = signal(0);
   readonly balance = this._balance.asReadonly();
 
@@ -188,19 +179,6 @@ export class Toggle {
     return currencySymbols[currency] || currency;
   }
 
-  assetLoaded() {
-    this._assetsCount.update((prev) => prev + 1);
-    // console.log(`Assets loaded: ${this._assetsCount()} / ${this._assetsTotal}`);
-
-    if (this._assetsCount() >= this._assetsTotal) {
-      this._isAssetsLoaded.set(true);
-    }
-  }
-
-  resetAssets() {
-    this._assetsCount.set(0);
-    this._isAssetsLoaded.set(false);
-  }
   private _isOpenMenu = signal(false);
   isOpenMenu = this._isOpenMenu.asReadonly();
 
@@ -305,22 +283,9 @@ export class Toggle {
   closeGameGuide() {
     this._isOpenGameQuideModal.set(false);
   }
-  private _isOpenAutoModal = signal(false);
-  isOpenAutoModal = this._isOpenAutoModal.asReadonly();
-
-  openAutoModal() {
-    this._isOpenAutoModal.set(true);
-  }
-
-  closeAutoModal() {
-    this._isOpenAutoModal.set(false);
-  }
 
   setCurrency(currency: string) {
     this._currency.set(currency);
-  }
-  setIsAssetsLoaded(state: boolean) {
-    this._isAssetsLoaded.set(state);
   }
   setBalance(balance: number) {
     this._balance.set(Number(balance.toFixed(2)));

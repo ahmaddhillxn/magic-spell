@@ -18,16 +18,11 @@ export const GAME_ASSETS = {
     burger: '/assets/magicSpell/images/vectors/menu.svg',
     soundOn: '/assets/magicSpell/images/vectors/sound.svg',
     soundOff: '/assets/magicSpell/images/vectors/soundOff.svg',
-    vimPlay: '/assets/magicSpell/images/vectors/vimPlay.svg',
-    close: '/assets/magicSpell/images/vectors/close.svg',
-    copy: '/assets/magicSpell/images/vectors/copy.svg',
-    home: '/assets/magicSpell/images/vectors/home.svg',
     betHistory: '/assets/magicSpell/images/vectors/bet-history.svg',
     gameGuide: '/assets/magicSpell/images/vectors/game-guide.svg',
     plus: '/assets/magicSpell/images/vectors/plusIcon.svg',
     minus: '/assets/magicSpell/images/vectors/minusIcon.svg',
     amountPopup: '/assets/magicSpell/images/vectors/amountPopupIcon.svg',
-    empty: '/assets/magicSpell/images/vectors/not-data.svg',
   },
 
   spine: {

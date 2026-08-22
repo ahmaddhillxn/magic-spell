@@ -83,11 +83,7 @@
                 [attr.aria-expanded]="toggle.isOpenMenu()"
                 [attr.aria-label]="toggle.isOpenMenu() ? 'Close menu' : 'Menu'"
               >
-                <span class="sc-fvxynf gEpkbQ"
-                  ><span class="sc-nVhaW kDNkNV" [class.open]="toggle.isOpenMenu()"
-                    ><span class="sc-hiwOQz XxFg"></span><span class="sc-hiwOQz XxFg"></span
-                    ><span class="sc-hiwOQz XxFg"></span></span
-                ></span>
+                <img alt="Menu" [src]="assets.icons.burger" />
               </button>
               <div
                 data-ignore-click="menu"
@@ -230,13 +226,6 @@
         </div>
       </div>
     </div>
-    <section
-      aria-label="Notifications alt+T"
-      tabindex="-1"
-      aria-live="polite"
-      aria-relevant="additions text"
-      aria-atomic="false"
-    ></section>
   </div>
 </div>
 
@@ -246,7 +235,6 @@
       <app-guideness-modal (closed)="closeGuide()" />
     </div>
   }
-  <app-autoplay-modal />
 
   <!-- Spine animation debug controller -->
   <button type="button" class="anim-panel-toggle" (click)="togglePanel()">

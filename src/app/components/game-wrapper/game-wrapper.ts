@@ -17,7 +17,6 @@ import { BetAmountService } from '../services/bet-amount-service';
 import { BetHistoryModal } from '../modals/bet-history-modal/bet-history-modal';
 import { GuidenessModal } from '../modals/guideness-modal/guideness-modal';
 import { BetAmount } from '../modals/bet-amount/bet-amount';
-import { AutoplayModal } from '../modals/autoplay-modal/autoplay-modal';
 import { GAME_ASSETS, GAME_TARGET_FPS } from '../game-assets';
 import { BetHistoryService } from '../services/history';
 import { Api } from '../services/api';
@@ -33,7 +32,7 @@ type ResultAnimationPhase =
 
 @Component({
   selector: 'app-game-wrapper',
-  imports: [BetHistoryModal, GuidenessModal, BetAmount, AutoplayModal],
+  imports: [BetHistoryModal, GuidenessModal, BetAmount],
   templateUrl: './game-wrapper.html',
   styleUrl: './game-wrapper.css',
 })
@@ -327,7 +326,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
 
   placeBet(): void {
     if (this.roundRunning) return;
-    this.soundScene.playBetSequence();
+    this.soundScene.playBetClick();
     this.soundScene.markInteraction();
     const result = this.resolveRoundResult();
     this.playResultAnimation(result.multiplier, result.winAmount, 'auto');
@@ -447,6 +446,7 @@ export class GameWrapper implements AfterViewInit, OnDestroy {
     const popupStartMs = dropDelayMs + Math.round(dropMs * 0.25);
 
     this.clearRoundTimers();
+    this.soundScene.startRoundSpine();
     this.roundRunning = true;
     this.liveMultiplierVisible = true;
     this.winPopupVisible = false;
