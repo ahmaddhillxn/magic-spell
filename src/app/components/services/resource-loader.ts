@@ -10,6 +10,8 @@ export class ResourceLoaderService {
   private soundPools = new Map<string, HTMLAudioElement[]>();
   private audioUnlocked = false;
   private tabAudible = true;
+  private audioContext: AudioContext | null = null;
+  private bufferCache = new Map<string, AudioBuffer>();
 
   private _progress = signal(0);
   readonly progress = this._progress.asReadonly();
@@ -151,6 +153,8 @@ export class ResourceLoaderService {
 
     await Promise.all(promises);
     this.warmSoundPools();
+    const betClickUrl = this.urls.find((url) => /secondLevelButtonsSound/i.test(url));
+    if (betClickUrl) await this.preloadBuffer(betClickUrl);
   }
 
   /** Call when Pixi board (pegs) is drawn — keeps loader up until pegs are visible. */
@@ -200,6 +204,7 @@ export class ResourceLoaderService {
     if (this.audioUnlocked) return;
     this.audioUnlocked = true;
     this.warmSoundPools();
+    void this.ensureAudioContext()?.resume();
     // iOS/Safari: play each pool once (muted) inside the user gesture to unlock playback.
     for (const pool of this.soundPools.values()) {
       const audio =
@@ -238,8 +243,14 @@ export class ResourceLoaderService {
     return audio;
   }
 
-  playSound(url: string, volume = 0.7): void {
+  playSound(url: string, volume = 0.7, gain = 1): void {
     if (!this.tabAudible) return;
+
+    if (gain > 1.01) {
+      const played = this.playBufferedSound(url, volume, gain);
+      if (played) return;
+      void this.preloadBuffer(url);
+    }
 
     const pool = this.getSoundPool(url);
     const audio =
@@ -311,8 +322,55 @@ export class ResourceLoaderService {
     for (const url of this.urls) {
       if (/\.(mp3|wav|ogg|webm|m4a)$/i.test(url)) {
         this.getSoundPool(url);
+        if (/secondLevelButtonsSound/i.test(url)) {
+          void this.preloadBuffer(url);
+        }
       }
     }
+  }
+
+  private ensureAudioContext(): AudioContext | null {
+    if (typeof window === 'undefined') return null;
+    if (!this.audioContext) {
+      const Ctx = window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!Ctx) return null;
+      this.audioContext = new Ctx();
+    }
+    return this.audioContext;
+  }
+
+  private preloadBuffer(url: string): Promise<void> {
+    if (this.bufferCache.has(url)) return Promise.resolve();
+
+    const ctx = this.ensureAudioContext();
+    if (!ctx) return Promise.resolve();
+
+    return fetch(url)
+      .then((res) => res.arrayBuffer())
+      .then((data) => ctx.decodeAudioData(data))
+      .then((buffer) => {
+        this.bufferCache.set(url, buffer);
+      })
+      .catch(() => {
+        // Fall back to HTMLAudio playback.
+      });
+  }
+
+  private playBufferedSound(url: string, volume: number, gain: number): boolean {
+    const ctx = this.ensureAudioContext();
+    const buffer = this.bufferCache.get(url);
+    if (!ctx || !buffer) return false;
+
+    void ctx.resume();
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    const gainNode = ctx.createGain();
+    gainNode.gain.value = volume * gain;
+    source.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    source.start(0);
+    return true;
   }
 
   private getSoundPool(url: string): HTMLAudioElement[] {
@@ -344,6 +402,9 @@ export class ResourceLoaderService {
       cancelAnimationFrame(this.finishRaf);
       this.finishRaf = null;
     }
+    this.bufferCache.clear();
+    this.audioContext?.close().catch(() => {});
+    this.audioContext = null;
     this.cache.clear();
     this.soundPools.clear();
     this.audioUnlocked = false;

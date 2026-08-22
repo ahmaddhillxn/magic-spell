@@ -18,12 +18,14 @@ export class SoundScene {
   private readonly bgVolume = 0.18;
   private readonly bgDuckedVolume = 0.07;
   private readonly sfxButtonVolume = 1;
+  /** secondLevelButtonsSound.mp3 is mastered quieter than buttonsSound.mp3 */
+  private readonly sfxBetGain = 1.85;
   private readonly sfxSpineVolume = 1;
   private readonly sfxResultVolume = 1;
   private readonly uiDuckMs = 700;
   private readonly spineDuckMs = 3200;
   private readonly resultDuckMs = 2800;
-  private readonly spineDelayMs = 120;
+  private readonly spineDelayMs = 200;
 
   constructor(
     private readonly loader: ResourceLoaderService,
@@ -53,7 +55,12 @@ export class SoundScene {
    * second click immediately, spine SFX after {@link spineDelayMs}.
    */
   playBetSequence(): void {
-    this.playUiSound(GAME_ASSETS.sounds.secondClick, this.sfxButtonVolume, this.uiDuckMs);
+    this.playUiSound(
+      GAME_ASSETS.sounds.secondClick,
+      this.sfxButtonVolume,
+      this.uiDuckMs,
+      this.sfxBetGain,
+    );
     this.scheduleSpineSound();
   }
 
@@ -123,11 +130,11 @@ export class SoundScene {
     }, this.spineDelayMs);
   }
 
-  private playUiSound(url: string, volume: number, duckMs: number): void {
+  private playUiSound(url: string, volume: number, duckMs: number, gain = 1): void {
     if (!this.isSoundOn() || !this.isTabAudible()) return;
     this.loader.unlockAudio();
     this.duckBackground(duckMs);
-    this.loader.playSound(url, volume);
+    this.loader.playSound(url, volume, gain);
   }
 
   private playSpineSound(): void {
